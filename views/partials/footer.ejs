@@ -1,0 +1,41 @@
+ <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script>
+        // Pass user preferences from EJS to client-side JS if user is logged in
+        <% if (user) { %>
+        window.userPreferences = { // Use window object to make it globally accessible
+            language: "<%= user.preferences.language %>",
+            explanationStyle: "<%= user.preferences.explanationStyle %>",
+            // Add other preferences as needed, e.g., 'user.avatarUrl'
+            avatarUrl: "<%= user.avatarUrl || '' %>", // Pass empty string if null
+            username: "<%= user.username || '' %>"
+        };
+        <% } else { %>
+        window.userPreferences = null; // Or an empty object if user is not logged in
+        <% } %>
+
+        // Initialize Marked.js (optional, can be in client.js too)
+        marked.setOptions({
+            gfm: true, // GitHub Flavored Markdown
+            breaks: true, // Interpret line breaks as <br/>
+            // Highlight.js/Prism.js integration (if using a dynamic parser)
+            highlight: function(code, lang) {
+                const language = Prism.languages[lang] || Prism.languages.markup;
+                return Prism.highlight(code, language, lang);
+            }
+        });
+
+        // Initialize Prism.js highlighting after content is loaded/updated
+        // This is crucial if content is dynamically added after initial page load
+        document.addEventListener('DOMContentLoaded', () => {
+            Prism.highlightAll();
+        });
+        // Or for dynamic content added later, call Prism.highlightElement(element);
+        // or Prism.highlightAllUnder(element); on the new elements.
+
+    </script>
+    <script src="/js/client.js"></script>
+</body>
+</html>
