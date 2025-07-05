@@ -350,10 +350,12 @@ On user request:
         const wrapper = document.createElement('div');
         wrapper.classList.add('message-fade-in');
         if (sender === 'user') {
-            const formatted = marked.parse(message); // Markdown render with code blocks etc.
+            const cleanedText = message.trim().replace(/^\s+|\s+$/g, '');
+            const formatted = marked.parse(cleanedText);
+
             wrapper.className = 'flex items-start gap-4 justify-end message-fade-in';
             wrapper.innerHTML = `
-        <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg rounded-br-none max-w-lg shadow-md border border-gray-200 dark:border-gray-700 prose dark:prose-invert whitespace-pre-wrap">
+        <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg rounded-br-none max-w-lg shadow-md border border-gray-200 dark:border-gray-700 prose dark:prose-invert prose-sm p-0 m-0 leading-tight">
             ${formatted}
         </div>
         <div class="flex-shrink-0 h-9 w-9 rounded-full bg-gray-600 flex items-center justify-center">
@@ -361,8 +363,11 @@ On user request:
         </div>`;
             addCopyButtons(wrapper);
         }
+
         else {
-            const formatted = marked.parse(message);
+            const cleanedText = message.trim().replace(/^\s+|\s+$/g, '');
+            const formatted = marked.parse(cleanedText);
+
             wrapper.className = 'flex items-start gap-4 message-fade-in';
             wrapper.innerHTML = `<div class="flex-shrink-0 h-9 w-9 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center shadow-md"><svg class="w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-9.995 9.083A10 10 0 0 0 12 22a10 10 0 0 0 10-10A10 10 0 0 0 12 2zM8.5 10a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm7 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg></div><div class="bg-yellow-50 p-4 rounded-lg rounded-tl-none max-w-full prose shadow-md border border-yellow-200">${formatted}</div>`;
             addCopyButtons(wrapper);
