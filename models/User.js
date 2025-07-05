@@ -31,15 +31,6 @@ const UserSchema = new mongoose.Schema(
             data: Buffer,      // Stores the binary image data
             contentType: String // Stores the MIME type (e.g., 'image/png', 'image/jpeg')
         },
-        role: {
-            type: String,
-            required: [true, 'Role is required'],
-            enum: {
-                values: ['learner', 'educator', 'admin'],
-                message: 'Invalid role. Role must be learner, educator, or admin.'
-            },
-            default: 'learner'
-        },
         fieldOfWork: {
             type: String,
             required: [true, 'Field of work is required'],

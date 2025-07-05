@@ -44,9 +44,9 @@ router.post('/register', (req, res) => {
             return res.render('register', { msg: `File Upload Error: ${err.message || err}` });
         }
 
-        const { username, email, password, role, fieldOfWork, goal } = req.body;
+        const { username, email, password, fieldOfWork, goal } = req.body;
         // Consider more robust server-side validation here, aligning with Mongoose schema
-        if (!username || !email || !password || !role || !fieldOfWork || !goal) {
+        if (!username || !email || !password  || !fieldOfWork || !goal) {
             return res.render('register', { msg: 'Please fill in all fields' });
         }
 
@@ -71,7 +71,7 @@ router.post('/register', (req, res) => {
 
             const otp = crypto.randomInt(100000, 999999).toString();
             const newUser = new User({
-                username, email, password, role, fieldOfWork, goal,
+                username, email, password, fieldOfWork, goal,
                 otp, otpExpires: Date.now() + 10 * 60 * 1000
             });
 
@@ -182,7 +182,6 @@ router.post('/login', async (req, res) => {
             // For direct EJS display, you'll need the data and contentType
             profileImage: user.profileImage ? { data: user.profileImage.data.toString('base64'), contentType: user.profileImage.contentType } : null,
             preferences: user.preferences,
-            role: user.role,
             fieldOfWork: user.fieldOfWork,
             goal: user.goal
         };
@@ -241,7 +240,6 @@ router.post('/otp-login', async (req, res) => {
             username: user.username,
             profileImage: user.profileImage ? { data: user.profileImage.data.toString('base64'), contentType: user.profileImage.contentType } : null,
             preferences: user.preferences,
-            role: user.role,
             fieldOfWork: user.fieldOfWork,
             goal: user.goal
         };

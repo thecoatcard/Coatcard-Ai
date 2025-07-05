@@ -6,41 +6,53 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const connectDB = require('./config/db');
 
-// Connect to Database
 connectDB();
-
 const app = express();
-const PORT = process.env.PORT || 3000;
-
-// EJS Setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Middleware
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Session Middleware
+app.set('trust proxy', 1);
+
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'a_very_strong_secret_key_for_sessions',
+
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({ mongoUrl: process.env.MONGO_URI })
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGO_URI,
+        ttl: 14 * 24 * 60 * 60,
+        autoRemove: 'interval',
+        autoRemoveInterval: 10
+
+    }),
+    cookie: {
+        maxAge: 14 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+    }
 }));
 
-// Middleware to make user available in all templates
 app.use((req, res, next) => {
-    res.locals.user = req.session.user || null;
+
+    if (req.session.user && req.session.user.profileImage && req.session.user.profileImage.data) {
+        res.locals.user = {
+            ...req.session.user,
+            profileImageBase64: `data:${req.session.user.profileImage.contentType};base64,${req.session.user.profileImage.data}`
+        };
+    } else {
+        res.locals.user = req.session.user || null;
+    }
     next();
 });
 
-// --- Routes ---
 app.use('/', require('./routes/index'));
 app.use('/auth', require('./routes/auth'));
 app.use('/api', require('./routes/api'));
-app.use('/profile', require('./routes/profile')); // Add this line for the new profile routes
+app.use('/profile', require('./routes/profile'));
 
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+module.exports = app;

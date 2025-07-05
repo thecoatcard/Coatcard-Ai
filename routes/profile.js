@@ -1,27 +1,26 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
-const User = require('../models/User');
-const { ensureAuthenticated } = require('../config/auth_middleware');
+const path = require('path'); // Still useful for path.extname in checkFileType
+const User = require('../models/User'); // Assuming User model is one directory up
+const { ensureAuthenticated } = require('../config/auth_middleware'); // Assuming middleware path
 
 // --- Multer Setup for Profile Picture ---
-const storage = multer.diskStorage({
-    destination: './public/uploads/',
-    filename: (req, file, cb) => cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
-});
 
-// UPDATED: Increased file size limit to 5MB
-const upload = multer({ 
-    storage: storage, 
+// UPDATED: Changed from diskStorage to memoryStorage for MongoDB BinData storage
+// Files will be held in memory as a Buffer (req.file.buffer)
+const upload = multer({
+    storage: multer.memoryStorage(), // Use memoryStorage for direct DB storage
     limits: { fileSize: 5000000 }, // 5MB limit
-    fileFilter: (req, file, cb) => checkFileType(file, cb) 
+    fileFilter: (req, file, cb) => checkFileType(file, cb)
 }).single('profileImage');
 
 function checkFileType(file, cb){
     const filetypes = /jpeg|jpg|png|gif/;
-    if(filetypes.test(path.extname(file.originalname).toLowerCase()) && filetypes.test(file.mimetype)) return cb(null,true);
-    cb('Error: Images Only!');
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+    if(mimetype && extname) return cb(null,true);
+    cb('Error: Images Only!'); // This error message will be caught by multer's error handler
 }
 
 /**
@@ -30,14 +29,17 @@ function checkFileType(file, cb){
  */
 router.get('/', ensureAuthenticated, async (req, res) => {
     try {
+        // Find user by ID. Select profileImage.data and .contentType if not automatically populated
         const user = await User.findById(req.session.user.id);
         if (!user) {
+            // Log for debugging
+            console.error('User not found for session ID:', req.session.user.id);
             return res.redirect('/login');
         }
         res.render('profile', { user, msg: null, msgType: null });
     } catch (err) {
-        console.error(err);
-        res.redirect('/chat');
+        console.error('Error fetching profile page:', err); // Log for debugging
+        res.redirect('/chat'); // Redirect to a safe page on error
     }
 });
 
@@ -47,41 +49,78 @@ router.get('/', ensureAuthenticated, async (req, res) => {
  */
 router.post('/', ensureAuthenticated, (req, res) => {
     upload(req, res, async (err) => {
+        // Always try to fetch the user if an error occurs for consistent rendering
+        let user;
+        try {
+            user = await User.findById(req.session.user.id);
+            if (!user) {
+                console.error('User not found during profile update for session ID:', req.session.user.id);
+                return res.redirect('/login');
+            }
+        } catch (fetchErr) {
+            console.error('Error fetching user during profile update (pre-multer error):', fetchErr);
+            return res.redirect('/chat'); // Or handle this more gracefully
+        }
+
         if (err) {
-            const user = await User.findById(req.session.user.id);
+            console.error('Multer file upload error during profile update:', err); // Log the actual error
             if (err instanceof multer.MulterError) {
                 return res.render('profile', { user, msg: `File Upload Error: ${err.message}`, msgType: 'error' });
             }
-            return res.render('profile', { user, msg: `File Upload Error: ${err}`, msgType: 'error' });
+            return res.render('profile', { user, msg: `File Upload Error: ${err.message || err}`, msgType: 'error' });
         }
 
         try {
             const { username, language, explanationStyle } = req.body;
-            const user = await User.findById(req.session.user.id);
-
-            if (!user) return res.redirect('/login');
 
             // Update fields
             user.username = username;
             user.preferences.language = language;
             user.preferences.explanationStyle = explanationStyle;
 
+            // UPDATED: Save profile image data and content type from memory buffer
             if (req.file) {
-                user.profileImage = `/uploads/${req.file.filename}`;
+                user.profileImage = {
+                    data: req.file.buffer,      // Multer memoryStorage provides the file as a buffer
+                    contentType: req.file.mimetype // Multer provides the MIME type
+                };
             }
+            // If no file is uploaded, we don't modify user.profileImage,
+            // so it retains its existing value.
 
-            await user.save();
+            await user.save(); // This will trigger pre('save') hooks if you have them
 
-            // Update the session with new details
+            // UPDATED: Update the session with new details, converting Buffer to Base64 for EJS
             req.session.user.username = user.username;
-            req.session.user.profileImage = user.profileImage;
+            if (user.profileImage && user.profileImage.data) {
+                req.session.user.profileImage = {
+                    data: user.profileImage.data.toString('base64'),
+                    contentType: user.profileImage.contentType
+                };
+            } else {
+                req.session.user.profileImage = null; // Or a default path string if that's what EJS expects
+            }
             req.session.user.preferences = user.preferences;
+
+            // Save session changes explicitly if needed (e.g., using req.session.save)
+            // if your session store requires it before redirect/render for immediate updates.
+            // req.session.save((saveErr) => {
+            //     if (saveErr) console.error("Error saving session after profile update:", saveErr);
+            //     res.render('profile', { user, msg: 'Profile updated successfully!', msgType: 'success' });
+            // });
 
             res.render('profile', { user, msg: 'Profile updated successfully!', msgType: 'success' });
 
         } catch (dbErr) {
-            console.error(dbErr);
-            const user = await User.findById(req.session.user.id);
+            console.error('Database error during profile update:', dbErr); // Log for debugging
+            // Handle Mongoose validation errors more specifically
+            if (dbErr.name === 'ValidationError') {
+                const messages = Object.values(dbErr.errors).map(val => val.message);
+                return res.render('profile', { user, msg: `Validation Error: ${messages.join(', ')}`, msgType: 'error' });
+            }
+            if (dbErr.code === 11000) { // MongoDB duplicate key error
+                return res.render('profile', { user, msg: 'Username or Email already taken.', msgType: 'error' });
+            }
             res.render('profile', { user, msg: 'Database error. Please try again.', msgType: 'error' });
         }
     });
