@@ -48,7 +48,11 @@
                 </div>
                  <div>
                     <label class="block text-sm font-medium text-gray-700">Current Profile Picture</label>
-                    <img src="<%= user.profileImage %>" alt="Current Profile Picture" class="mt-2 h-20 w-20 rounded-full object-cover">
+                    <img 
+  src="<%= user.profileImage ? `data:${user.profileImage.contentType};base64,${user.profileImage.data}` : '/images/default-avatar.png' %>" 
+  alt="Current Profile Picture"
+  class="mt-2 h-20 w-20 rounded-full object-cover">
+
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Upload New Picture (Optional)</label>
