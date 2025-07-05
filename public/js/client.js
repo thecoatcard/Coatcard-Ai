@@ -107,7 +107,6 @@ On user request:
 
     userInput.addEventListener('input', () => {
     userInput.style.height = 'auto'; // Reset to natural height
-    userInput.style.height = `${userInput.scrollHeight}px`; // Expand to fit
 });
 
 
