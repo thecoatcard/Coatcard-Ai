@@ -106,8 +106,8 @@ On user request:
 
 
     userInput.addEventListener('input', () => {
-    userInput.style.height = 'auto'; // Reset to natural height
-});
+        userInput.style.height = 'auto'; // Reset to natural height
+    });
 
 
     async function loadChatHistoryList() {
@@ -253,21 +253,21 @@ On user request:
     }
 
     async function sendMessage() {
-    const messageText = userInput.value.trim();
-    if (messageText === '' || !activeChatId) return;
+        const messageText = userInput.value.trim();
+        if (messageText === '' || !activeChatId) return;
 
-    displayMessage(messageText, 'user');
-    userInput.value = '';
-    
-    // Reset height after sending
-    userInput.style.height = 'auto';
+        displayMessage(messageText, 'user');
+        userInput.value = '';
 
-    const isFirstMessage = localHistory.length === 0;
-    localHistory.push({ role: "user", parts: [{ text: messageText }] });
+        // Reset height after sending
+        userInput.style.height = 'auto';
 
-    showLoadingIndicator();
-    await getGeminiResponse(localHistory, isFirstMessage ? messageText : null);
-}
+        const isFirstMessage = localHistory.length === 0;
+        localHistory.push({ role: "user", parts: [{ text: messageText }] });
+
+        showLoadingIndicator();
+        await getGeminiResponse(localHistory, isFirstMessage ? messageText : null);
+    }
 
 
     async function getGeminiResponse(historyPayload, firstMessage = null) {
@@ -340,17 +340,21 @@ On user request:
         const wrapper = document.createElement('div');
         wrapper.classList.add('message-fade-in');
         if (sender === 'user') {
-            const formatted = marked.parse(message); // Markdown render with code blocks etc.
-            wrapper.className = 'flex items-start gap-4 justify-end message-fade-in';
+            const cleanedText = message.trim().replace(/^\s+|\s+$/g, '');
+            const formatted = marked.parse(cleanedText);
+
+            wrapper.className = 'flex items-start gap-4 message-fade-in';
             wrapper.innerHTML = `
-        <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg rounded-br-none max-w-lg shadow-md border border-gray-200 dark:border-gray-700 prose dark:prose-invert whitespace-pre-wrap">
-            ${formatted}
-        </div>
         <div class="flex-shrink-0 h-9 w-9 rounded-full bg-gray-600 flex items-center justify-center">
             <img src="${userDetails.profileImage}" class="h-full w-full object-cover rounded-full" alt="User Avatar">
-        </div>`;
+        </div>
+        <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg rounded-tl-none max-w-full prose dark:prose-invert prose-sm m-0 p-0 leading-tight border border-gray-300 dark:border-gray-700">
+            ${formatted}
+        </div>
+    `;
             addCopyButtons(wrapper);
         }
+
         else {
             const formatted = marked.parse(message);
             wrapper.className = 'flex items-start gap-4 message-fade-in';
