@@ -4,132 +4,148 @@ const axios = require('axios');
 const Chat = require('../models/Chat');
 const { ensureAuthenticated } = require('../config/auth_middleware');
 
-// GEMINI API Setup
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+// --- CHAT API ROUTES ---
 
-// GET all chats (most recent first)
+/**
+ * @route   GET /api/chats
+ * @desc    Get all chat conversations for the logged-in user, sorted by most recently updated
+ */
 router.get('/chats', ensureAuthenticated, async (req, res) => {
     try {
-        const chats = await Chat.find({ userId: req.session.user.id }).sort({ updatedAt: -1 }).lean();
+        const chats = await Chat.find({ userId: req.session.user.id }).sort({ updatedAt: -1 });
         res.json(chats);
     } catch (err) {
-        console.error('Fetch chats error:', err);
-        res.status(500).json({ error: 'Unable to fetch chats' });
+        console.error('Error fetching chats:', err);
+        res.status(500).json({ error: 'Failed to fetch conversations.' });
     }
 });
 
-// GET single chat history
+/**
+ * @route   GET /api/chat/:id
+ * @desc    Get the history of a specific chat conversation
+ */
 router.get('/chat/:id', ensureAuthenticated, async (req, res) => {
     try {
-        const chat = await Chat.findOne({ _id: req.params.id, userId: req.session.user.id }).lean();
-        if (!chat) return res.status(404).json({ error: 'Chat not found' });
+        const chat = await Chat.findOne({ _id: req.params.id, userId: req.session.user.id });
+        if (!chat) {
+            return res.status(404).json({ error: 'Chat not found.' });
+        }
         res.json(chat);
     } catch (err) {
-        console.error('Fetch chat error:', err);
-        res.status(500).json({ error: 'Unable to fetch chat history' });
+        console.error('Error fetching chat history:', err);
+        res.status(500).json({ error: 'Failed to fetch chat history.' });
     }
 });
 
-// POST a message and get AI reply
+/**
+ * @route   POST /api/chat
+ * @desc    Handle sending a message to a conversation, interacting with Gemini, and saving the result
+ */
 router.post('/chat', ensureAuthenticated, async (req, res) => {
     const { chatId, history, firstMessage, systemPrompt } = req.body;
-    if (!Array.isArray(history) || !systemPrompt) {
-        return res.status(400).json({ error: 'Invalid chat history or system prompt' });
+    if (!history || !systemPrompt) {
+        return res.status(400).json({ error: 'Chat history and system prompt are required.' });
     }
 
+    const apiKey = process.env.GEMINI_API_KEY;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+    // The full payload sent to Gemini includes the system prompt and the user/model history
     const geminiPayload = [systemPrompt, ...history];
 
     try {
-        const geminiResponse = await axios.post(GEMINI_API_URL, { contents: geminiPayload });
-        const candidates = geminiResponse?.data?.candidates;
+        const geminiResponse = await axios.post(apiUrl, { contents: geminiPayload });
+        const botResponse = geminiResponse.data;
 
-        if (!candidates?.length || !candidates[0]?.content?.parts?.length) {
-            return res.status(500).json({ error: 'Invalid AI response' });
-        }
+        if (botResponse.candidates && botResponse.candidates.length > 0) {
+            // The history saved to the DB ONLY includes the user/model messages (no system prompt)
+            const newHistoryToSave = [...history, { role: 'model', parts: botResponse.candidates[0].content.parts }];
 
-        const aiReply = { role: 'model', parts: candidates[0].content.parts };
-        const newHistory = [...history, aiReply];
+            let chatTitle = 'New Conversation';
+            if (firstMessage) {
+                // Ask Gemini to create a short title for the conversation
+                const titlePrompt = `Based on the following user prompt, create a very short title (4-5 words max) for this conversation. User Prompt: "${firstMessage}"`;
+                const titleResponse = await axios.post(apiUrl, { contents: [{ role: 'user', parts: [{ text: titlePrompt }] }] });
+                if (titleResponse.data.candidates && titleResponse.data.candidates.length > 0) {
+                    const titleParts = titleResponse.data?.candidates?.[0]?.content?.parts;
+                    if (titleParts && titleParts[0]?.text) {
+                        chatTitle = titleParts[0].text.replace(/"/g, '').trim();
+                    }
 
-        // Non-blocking title generation
-        let titleUpdate = {};
-        if (firstMessage) {
-            generateTitleAsync(firstMessage).then(title => {
-                if (title) {
-                    Chat.findByIdAndUpdate(chatId, { title }).catch(console.error);
                 }
-            });
+            }
+
+            // Find the chat by its ID and update it with the new history and potentially a new title
+            const updatedChat = await Chat.findByIdAndUpdate(
+                chatId,
+                {
+                    history: newHistoryToSave,
+                    ...(firstMessage && { title: chatTitle }) // Conditionally update title only if it's the first message
+                },
+                { new: true } // Return the updated document
+            );
+
+            // Send the AI's response and the updated chat document back to the client
+            res.json({ botResponse, updatedChat });
+        } else {
+            res.status(500).json({ error: 'No valid response from AI.' });
         }
-
-        const updatedChat = await Chat.findByIdAndUpdate(
-            chatId,
-            { history: newHistory },
-            { new: true }
-        );
-
-        res.json({ botResponse: aiReply, updatedChat });
-    } catch (err) {
-        console.error('Gemini error:', err.response?.data || err.message);
-        res.status(500).json({ error: 'Gemini failed to respond' });
+    } catch (error) {
+        console.error('Error in /api/chat:', error.response ? error.response.data : error.message);
+        res.status(500).json({ error: 'Failed to get response from AI.' });
     }
 });
 
-// Utility: generate chat title (non-blocking)
-async function generateTitleAsync(message) {
-    const prompt = `Create a short (4-5 words max) title for this conversation: "${message}"`;
-    try {
-        const res = await axios.post(GEMINI_API_URL, {
-            contents: [{ role: 'user', parts: [{ text: prompt }] }]
-        });
-
-        return res.data?.candidates?.[0]?.content?.parts?.[0]?.text?.replace(/"/g, '').trim() || null;
-    } catch (e) {
-        console.warn('Title generation failed:', e.response?.data || e.message);
-        return null;
-    }
-}
-
-// Create a new empty chat
+/**
+ * @route   POST /api/chat/new
+ * @desc    Create a new, empty chat conversation in the database
+ */
 router.post('/chat/new', ensureAuthenticated, async (req, res) => {
     try {
-        const chat = new Chat({
+        const newChat = new Chat({
             userId: req.session.user.id,
             title: 'New Conversation',
             history: []
         });
-        await chat.save();
-        res.status(201).json(chat);
+        await newChat.save();
+        res.status(201).json(newChat);
     } catch (err) {
-        console.error('Create chat error:', err);
-        res.status(500).json({ error: 'Unable to create chat' });
+        console.error('Error creating new chat:', err);
+        res.status(500).json({ error: 'Failed to create a new conversation.' });
     }
 });
 
-// Clear chat history
+/**
+ * @route   POST /api/chat/clear/:id
+ * @desc    Clear a specific chat conversation's history and reset its title
+ */
 router.post('/chat/clear/:id', ensureAuthenticated, async (req, res) => {
     try {
         const chat = await Chat.findOneAndUpdate(
             { _id: req.params.id, userId: req.session.user.id },
-            { history: [], title: 'New Conversation' },
+            { $set: { history: [], title: 'New Conversation' } },
             { new: true }
         );
-        if (!chat) return res.status(404).json({ error: 'Chat not found' });
-        res.json({ message: 'Chat cleared', chat });
-    } catch (err) {
-        console.error('Clear chat error:', err);
-        res.status(500).json({ error: 'Failed to clear chat' });
+        if (!chat) return res.status(404).json({ error: 'Chat not found.' });
+        res.status(200).json({ message: 'Chat history cleared.', chat });
+    } catch (error) {
+        console.error('Error clearing chat:', error);
+        res.status(500).json({ error: 'Failed to clear chat history.' });
     }
 });
 
-// Delete a chat
+/**
+ * @route   DELETE /api/chat/:id
+ * @desc    Delete a specific chat conversation from the database
+ */
 router.delete('/chat/:id', ensureAuthenticated, async (req, res) => {
     try {
-        const deleted = await Chat.findOneAndDelete({ _id: req.params.id, userId: req.session.user.id });
-        if (!deleted) return res.status(404).json({ error: 'Chat not found' });
-        res.json({ message: 'Chat deleted successfully' });
-    } catch (err) {
-        console.error('Delete chat error:', err);
-        res.status(500).json({ error: 'Failed to delete chat' });
+        const chat = await Chat.findOneAndDelete({ _id: req.params.id, userId: req.session.user.id });
+        if (!chat) return res.status(404).json({ error: 'Chat not found.' });
+        res.status(200).json({ message: 'Chat deleted successfully.' });
+    } catch (error) {
+        console.error('Error deleting chat:', error);
+        res.status(500).json({ error: 'Failed to delete chat.' });
     }
 });
 
