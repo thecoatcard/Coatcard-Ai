@@ -108,3 +108,88 @@ body {
     cursor: not-allowed;
     color: #9ca3af;
 }
+/* Custom Scrollbar for better aesthetics */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px; /* For vertical scrollbar */
+    height: 8px; /* For horizontal scrollbar (if needed) */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Light gray track */
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #ccc; /* Slightly darker thumb */
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #bbb; /* Even darker on hover */
+}
+
+/* Hide scrollbar, but allow scrolling */
+.scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, Opera */
+}
+
+
+/* AI Typing Indicator Dots Animation */
+.dot-typing {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #9CA3AF; /* Tailwind gray-400 */
+    animation: bounceDots 1.4s infinite ease-in-out;
+}
+
+.dot-typing.animation-delay-200 { animation-delay: 0.2s; }
+.dot-typing.animation-delay-400 { animation-delay: 0.4s; }
+
+/* Keyframes for animations - these should ideally be in tailwind.config.js extend.keyframes */
+/* If you prefer to keep them in style.css for clarity, ensure they don't clash. */
+/* @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounceDots {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.6; }
+    40% { transform: translateY(-4px); opacity: 1; }
+} */
+
+/* Specific styles for message bubbles if Tailwind classes are not enough */
+.user-message {
+    background-color: theme('colors.primary-yellow.200');
+    color: theme('colors.text-dark');
+    border-radius: theme('borderRadius.xl');
+    border-bottom-right-radius: theme('borderRadius.none'); /* Rounded on all but bottom right */
+    box-shadow: theme('boxShadow.sm');
+}
+
+.ai-message {
+    background-color: theme('colors.white');
+    color: theme('colors.text-dark');
+    border-radius: theme('borderRadius.xl');
+    border-bottom-left-radius: theme('borderRadius.none'); /* Rounded on all but bottom left */
+    box-shadow: theme('boxShadow.md');
+}
+
+/* Tailwind CSS filters plugin for backdrop-filter (glass effect) */
+/* You'll need to install it: npm install tailwindcss-filters */
+/* And add to your tailwind.config.js plugins array: require('tailwindcss-filters'), */
+/* Then you can use classes like `backdrop-blur-md` */
+/* .backdrop-blur-md {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+} */
