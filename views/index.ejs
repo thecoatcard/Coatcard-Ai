@@ -7,15 +7,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>body { font-family: 'Inter', sans-serif; }</style>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-
 </head>
 <body class="bg-yellow-50 flex items-center justify-center h-screen">
-    <div class="text-center p-8">
+    <div class="text-center p-8 max-w-2xl">
         <div class="mb-8">
             <h1 class="text-6xl font-bold text-yellow-900">Coatcard AI</h1>
             <p class="text-xl text-amber-700 mt-2">Your Personal Coding Assistant</p>
         </div>
-        <div class="space-x-4">
+        <div class="space-x-4 mb-8">
             <a href="/login" class="px-8 py-3 bg-yellow-400 text-stone-800 font-semibold rounded-lg shadow-md hover:bg-yellow-500 transition-transform transform hover:scale-105">
                 Login
             </a>
@@ -23,6 +22,20 @@
                 Register
             </a>
         </div>
+        
+        <!-- New Section: Why Use Me -->
+        <div class="bg-white rounded-xl shadow-lg p-6 border border-yellow-200 text-left">
+            <h2 class="text-2xl font-semibold text-yellow-800 mb-4">I am Coatcard AI</h2>
+            <p class="text-gray-700 mb-4">An expert AI assistant designed to help you with computer science and programming topics.</p>
+            <ul class="list-disc list-inside space-y-2 text-gray-800">
+                <li><strong>Expertise:</strong> I specialize in providing clear, concise, and accurate information, particularly in <span class="text-blue-700 font-medium">C++</span>.</li>
+                <li><strong>Structured Learning:</strong> I break down complex topics into digestible sections, including logic, code, and explanations.</li>
+                <li><strong>Optimization:</strong> I provide both brute-force and optimized solutions to coding problems, helping you understand the trade-offs.</li>
+                <li><strong>Exam Preparation:</strong> I can switch to <span class="text-red-600 font-semibold">"Exam Time"</span> mode to provide clean, optimized code for practice.</li>
+                <li><strong>Focused Assistance:</strong> I tailor responses based on your role, field, and goals, ensuring the information is relevant and useful to you.</li>
+            </ul>
+        </div>
     </div>
 </body>
 </html>
+
