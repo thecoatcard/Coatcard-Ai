@@ -52,6 +52,8 @@
 
                 <!-- Password Login View -->
                 <div id="password-login-view" class="w-full flex-shrink-0">
+                    <!-- This empty div with bottom margin ensures consistent spacing with the OTP view -->
+                    <div class="mb-6 h-5"></div>
                     <form class="space-y-6" action="/auth/login" method="POST">
                         <div class="space-y-4">
                             <input id="email-address" name="email" type="email" required class="w-full px-4 py-3 bg-white/50 border border-yellow-300 rounded-lg text-yellow-900 placeholder-amber-700 focus:outline-none focus:ring-2 focus:ring-yellow-900" placeholder="Email address" value="<%= locals.email || '' %>">
@@ -78,12 +80,13 @@
 
                 <!-- OTP Login View -->
                 <div id="otp-login-view" class="w-full flex-shrink-0">
+                    <p class="text-center text-sm text-amber-800 mb-6 h-5">Enter your email to receive a login code.</p>
                     <form class="space-y-6" action="/auth/request-otp-login" method="POST">
                         <div class="space-y-4">
-                            <p class="text-center text-sm text-amber-800 -mt-2">Enter your email to receive a login code.</p>
                             <input id="otp-email" name="email" type="email" required class="w-full px-4 py-3 bg-white/50 border border-yellow-300 rounded-lg text-yellow-900 placeholder-amber-700 focus:outline-none focus:ring-2 focus:ring-yellow-900" placeholder="Email address" value="<%= locals.email || '' %>">
                         </div>
-                        <div class="h-5"></div> <!-- Placeholder to match height of "Forgot Password" link -->
+                        <!-- This empty div matches the height of the "Forgot Password" link for perfect alignment -->
+                        <div class="h-5"></div> 
                         <div>
                             <button type="submit" class="w-full py-3 px-4 bg-yellow-900 text-white font-bold rounded-lg shadow-lg hover:bg-black transform hover:-translate-y-0.5 transition-all duration-300">
                                 Send Login Code
