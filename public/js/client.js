@@ -342,8 +342,7 @@ On user request:
         if (sender === 'user') {
             const cleanedText = message
                 .trim()
-                .replace(/^\s+|\s+$/g, '')        
-                .replace(/\n{2,}/g, '\n');        
+                .replace(/^\s+|\s+$/g, '');        
             const formatted = marked.parse(cleanedText).replace(/<p>/g, '<p class="m-0 p-0">');
 
 
