@@ -6,77 +6,165 @@
     <title>Coatcard AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="/css/style.css">
-</head>
-<body class="bg-white flex h-screen transition-colors duration-300">
 
-    <!-- Generic Confirmation Modal -->
-    <div id="confirmation-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+    <style>
+        /* Custom animations for typing indicator dots */
+        @keyframes bounce-slow1 {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-4px); }
+        }
+        @keyframes bounce-slow2 {
+            0%, 100% { transform: translateY(0); }
+            20% { transform: translateY(-4px); }
+            60% { transform: translateY(0); }
+        }
+        @keyframes bounce-slow3 {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-4px); }
+        }
+
+        .animate-bounce-slow1 { animation: bounce-slow1 1.5s infinite; }
+        .animate-bounce-slow2 { animation: bounce-slow2 1.5s infinite 0.3s; } /* Delay */
+        .animate-bounce-slow3 { animation: bounce-slow3 1.5s infinite 0.6s; } /* Delay */
+
+        /* Ensure scroll behavior is smooth for chat */
+        #chat-container {
+            scroll-behavior: smooth;
+        }
+
+        /* Basic styling for monospace font in code blocks (Prism theme does most of the heavy lifting) */
+        code, pre {
+            font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Source Code Pro', monospace;
+        }
+
+        /* Override Prism default background if necessary for consistency */
+        /* pre[class*="language-"] {
+            background-color: #282c34 !important; /* A slightly lighter dark mode background for pre */
+        } */
+    </style>
+</head>
+<body class="bg-gray-50 flex flex-col md:flex-row h-screen font-sans antialiased">
+
+    <div id="confirmation-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full animate-fade-in-up">
             <h3 id="modal-title" class="text-lg font-bold text-gray-900">Confirm Action</h3>
             <p id="modal-text" class="mt-2 text-sm text-gray-600">Are you sure?</p>
             <div class="mt-6 flex justify-end space-x-4">
-                <button id="cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
-                <button id="confirm-btn" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Confirm</button>
+                <button id="cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors duration-200">Cancel</button>
+                <button id="confirm-btn" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200">Confirm</button>
             </div>
         </div>
     </div>
 
-    <!-- Sidebar for Chat History -->
-    <div class="w-1/4 bg-yellow-50 border-r border-yellow-200 flex flex-col h-full">
-        <div class="p-4 border-b border-yellow-200">
-            <button id="new-chat-btn" class="w-full py-2 px-4 bg-yellow-400 text-stone-800 font-semibold rounded-lg shadow-sm hover:bg-yellow-500 transition">
-                + New Conversation
+    <div id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-amber-50 border-r border-amber-200 flex flex-col h-full z-40 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out md:w-1/4 md:min-w-[250px] shadow-lg md:shadow-none">
+        <div class="p-4 border-b border-amber-200">
+            <button id="new-chat-btn" class="w-full py-2 px-4 bg-amber-500 text-white font-semibold rounded-lg shadow-md hover:bg-amber-600 transition-colors duration-200 flex items-center justify-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" /><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm0 1.5a8.25 8.25 0 1 0 0 16.5 8.25 8.25 0 0 0 0-16.5Z" clip-rule="evenodd" /></svg>
+                <span>New Chat</span>
             </button>
         </div>
         <div id="chat-history-list" class="flex-1 overflow-y-auto p-2 space-y-1">
-            <!-- Chat history items will be loaded here by client.js -->
-        </div>
-        <div class="p-4 border-t border-yellow-200 flex items-center justify-between">
+            </div>
+        <div class="p-4 border-t border-amber-200 flex items-center justify-between bg-amber-100">
             <div class="flex items-center">
-                <a href="/profile" title="Edit Profile">
-                    <img 
-  src="<%= user.profileImage ? `data:${user.profileImage.contentType};base64,${user.profileImage.data}` : '/images/default-avatar.png' %>" 
-  alt="Profile" 
-  class="h-10 w-10 rounded-full mr-3 object-cover cursor-pointer hover:ring-2 hover:ring-yellow-400">
-
+                <a href="/profile" title="Edit Profile" class="flex-shrink-0">
+                    <%
+                        const userProfileImage = user.profileImage && user.profileImage.data ? `data:${user.profileImage.contentType};base64,${user.profileImage.data}` : null;
+                        const userInitials = user.username ? user.username.charAt(0).toUpperCase() : 'U';
+                        const bgColorClasses = ['bg-blue-500', 'bg-green-500', 'bg-red-500', 'bg-purple-500', 'bg-teal-500'];
+                        // A simple hash for consistent random color per user (not cryptographically secure)
+                        const randomColorIndex = (user.username.charCodeAt(0) % bgColorClasses.length);
+                        const fallbackBg = bgColorClasses[randomColorIndex];
+                    %>
+                    <% if (userProfileImage) { %>
+                        <img src="<%= userProfileImage %>"
+                             alt="Profile image of <%= user.username %>"
+                             class="h-10 w-10 rounded-full mr-3 object-cover cursor-pointer hover:ring-2 hover:ring-amber-400 transition-shadow">
+                    <% } else { %>
+                        <div class="h-10 w-10 <%= fallbackBg %> rounded-full mr-3 flex items-center justify-center text-white font-bold text-lg cursor-pointer hover:ring-2 hover:ring-amber-400 transition-shadow" aria-label="Profile image placeholder for <%= user.username %>">
+                            <%= userInitials %>
+                        </div>
+                    <% } %>
                 </a>
                 <div>
                     <p class="font-semibold text-gray-800"><%= user.username %></p>
-                    <a href="/auth/logout" class="text-sm text-yellow-600 hover:text-yellow-500">Logout</a>
+                    <a href="/auth/logout" class="text-sm text-amber-700 hover:text-amber-600 transition-colors duration-200">Logout</a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Main Chat Area -->
-    <div class="w-3/4 flex flex-col h-full">
-        <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-             <h2 id="chat-title" class="text-lg font-semibold text-gray-700 truncate">Conversation</h2>
-             <button id="clear-chat-btn" class="text-sm font-medium text-red-600 hover:text-red-500 disabled:text-gray-400 disabled:cursor-not-allowed">Clear Chat</button>
+    <div id="sidebar-overlay" class="hidden fixed inset-0 bg-black bg-opacity-40 z-30 md:hidden" onclick="toggleSidebar()"></div>
+
+    <div class="flex-1 flex flex-col h-full z-20 bg-gray-50 md:ml-0 transition-all duration-300">
+        <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-white shadow-sm">
+            <button id="menu-button" class="md:hidden p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-amber-400" aria-label="Open sidebar">
+                <svg class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+            <h2 id="chat-title" class="text-lg font-semibold text-gray-800 truncate flex-grow text-center md:text-left ml-2 md:ml-0">Conversation</h2>
+            <button id="clear-chat-btn" class="text-sm font-medium text-red-600 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed ml-auto transition-colors duration-200" title="Clear current conversation">Clear Chat</button>
         </div>
 
-        <div id="chat-container" class="flex-1 p-6 space-y-6 overflow-y-auto">
-             <!-- Chat messages will be loaded here by client.js -->
+        <div id="chat-container" class="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto">
+            <div id="chat-skeleton" class="space-y-6">
+                <div class="flex justify-start pl-2 animate-pulse">
+                    <div class="bg-gray-200 h-16 w-3/4 max-w-lg rounded-xl rounded-bl-none"></div>
+                </div>
+                <div class="flex justify-end pr-2 animate-pulse">
+                    <div class="bg-blue-100 h-10 w-2/3 max-w-md rounded-xl rounded-br-none"></div>
+                </div>
+                <div class="flex justify-start pl-2 animate-pulse">
+                    <div class="bg-gray-200 h-24 w-4/5 max-w-xl rounded-xl rounded-bl-none"></div>
+                </div>
+            </div>
         </div>
 
-        <div class="p-4 border-t border-gray-200">
-            <div class="relative bg-gray-100 rounded-full border border-gray-300">
-                <input type="text" id="userInput" placeholder="Message Coatcard AI..." class="w-full bg-transparent text-gray-800 placeholder-gray-500 rounded-full py-3 pl-5 pr-14 focus:outline-none focus:ring-2 focus:ring-yellow-400">
-                <button id="sendButton" class="absolute right-2 top-1/2 -translate-y-1/2 bg-yellow-400 text-white p-2 rounded-full hover:bg-yellow-500 disabled:bg-yellow-200">
+        <div class="p-4 border-t border-gray-200 bg-white shadow-lg">
+            <div class="relative flex items-end bg-gray-100 rounded-2xl border border-gray-200 shadow-inner focus-within:ring-2 focus-within:ring-amber-400 focus-within:border-amber-400 transition-all duration-200">
+                <textarea
+                    id="userInput"
+                    placeholder="Message Coatcard AI..."
+                    rows="1"
+                    class="flex-grow resize-none bg-transparent text-gray-800 placeholder-gray-500 rounded-2xl py-3 pl-5 pr-14 focus:outline-none overflow-hidden max-h-40 text-base"
+                    style="min-height: 48px;"
+                    oninput="autoResizeTextarea(this); updateSendButtonState();"
+                    onkeydown="handleInputKeydown(event)"
+                    aria-label="Message input for Coatcard AI"
+                ></textarea>
+                <button
+                    id="sendButton"
+                    class="absolute right-2 bottom-2 bg-amber-500 text-white p-2 rounded-full hover:bg-amber-600 disabled:bg-amber-300 disabled:cursor-not-allowed transition-colors duration-200"
+                    disabled
+                    aria-label="Send message"
+                    tabindex="0"
+                >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3.478 2.405a.75.75 0 0 0-.926.94l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.405Z"/></svg>
                 </button>
             </div>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
     <script>
-        // Pass user details to the client-side script
+        // Configure Prism Autoloader to load from default path if not explicitly set
+        if (Prism.plugins && Prism.plugins.autoloader) {
+            Prism.plugins.autoloader.languages_path = 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/';
+        }
+    </script>
+
+
+    <script>
         const userDetails = {
             profileImage: "<%= user.profileImage && user.profileImage.data ? `data:${user.profileImage.contentType};base64,${user.profileImage.data}` : '/images/default-avatar.png' %>",
-
+            username: "<%= user.username %>", // Added username for avatar fallback
             preferences: {
                 language: "<%= user.preferences.language %>",
                 explanationStyle: "<%= user.preferences.explanationStyle %>"
@@ -87,5 +175,319 @@
         };
     </script>
     <script src="/js/client.js"></script>
+
+    <script>
+        // All client-side JavaScript from the previous response should be placed in client.js
+        // However, for this complete EJS file example, I'll include the core functions here for context.
+
+        // Helper function for modal (from your original code)
+        function showConfirmationModal(title, text, onConfirm) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerText = text;
+            document.getElementById('confirmation-modal').classList.remove('hidden');
+
+            const confirmBtn = document.getElementById('confirm-btn');
+            const cancelBtn = document.getElementById('cancel-btn');
+
+            const confirmHandler = () => {
+                onConfirm();
+                hideConfirmationModal();
+            };
+
+            const cancelHandler = () => {
+                hideConfirmationModal();
+            };
+
+            confirmBtn.onclick = confirmHandler;
+            cancelBtn.onclick = cancelHandler;
+        }
+
+        function hideConfirmationModal() {
+            document.getElementById('confirmation-modal').classList.add('hidden');
+        }
+
+        // --- Core Chat Functions (Ideally in client.js) ---
+
+        // Function to auto-resize textarea
+        function autoResizeTextarea(textarea) {
+            textarea.style.height = 'auto'; // Reset height
+            textarea.style.height = textarea.scrollHeight + 'px'; // Set to scroll height
+            // Optional: Scroll chat container to bottom when input resizes
+            const chatContainer = document.getElementById('chat-container');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Function to enable/disable send button based on input
+        function updateSendButtonState() {
+            const userInput = document.getElementById('userInput');
+            const sendButton = document.getElementById('sendButton');
+            sendButton.disabled = userInput.value.trim() === '';
+        }
+
+        // Function to handle Enter key for sending (Shift+Enter for new line)
+        function handleInputKeydown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault(); // Prevent default Enter behavior (new line)
+                document.getElementById('sendButton').click(); // Trigger send button click
+            }
+        }
+
+        // Function to show/hide AI typing indicator
+        function showTypingIndicator() {
+            const indicator = document.getElementById('aiTypingIndicator');
+            if (indicator) { // Check if element exists
+                indicator.classList.remove('hidden');
+                scrollToBottom(); // Ensure it's visible if at the bottom
+            }
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('aiTypingIndicator');
+            if (indicator) { // Check if element exists
+                indicator.classList.add('hidden');
+            }
+        }
+
+        // Function to scroll chat container to bottom
+        function scrollToBottom() {
+            const chatContainer = document.getElementById('chat-container');
+            chatContainer.scrollTo({
+                top: chatContainer.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        // Function to append a message to the chat container
+        // THIS IS CRUCIAL AND NEEDS TO BE ADAPTED TO YOUR ACTUAL client.js LOGIC
+        function appendMessage(content, sender) {
+            const chatContainer = document.getElementById('chat-container');
+            const messageDiv = document.createElement('div');
+
+            // Use marked.js to parse markdown content
+            let messageHtml = marked.parse(content);
+
+            // Add specific classes based on sender
+            if (sender === 'user') {
+                messageDiv.className = 'flex justify-end mb-4 pr-2';
+                messageDiv.innerHTML = `
+                    <div class="bg-blue-100 text-gray-900 p-3 rounded-xl rounded-br-none max-w-[80%] md:max-w-[70%] shadow-sm flex flex-col items-end">
+                        <div class="text-sm break-words chat-content">${messageHtml}</div>
+                        <span class="text-xs text-gray-500 mt-1 mr-1">You</span>
+                    </div>
+                `;
+            } else { // AI message
+                messageDiv.className = 'flex justify-start mb-4 pl-2';
+                messageDiv.innerHTML = `
+                    <div class="bg-gray-100 text-gray-900 p-3 rounded-xl rounded-bl-none max-w-[80%] md:max-w-[70%] shadow-md flex flex-col items-start">
+                        <div class="text-sm break-words chat-content">${messageHtml}</div>
+                        <span class="text-xs text-gray-500 mt-1 ml-1">Coatcard AI</span>
+                    </div>
+                    <div id="aiTypingIndicator" class="flex justify-start mb-4 pl-2 hidden">
+                        <div class="bg-gray-100 p-3 rounded-xl rounded-bl-none shadow-sm">
+                            <div class="flex space-x-1 items-center">
+                                <span class="dot animate-bounce-slow1 w-2 h-2 bg-gray-500 rounded-full"></span>
+                                <span class="dot animate-bounce-slow2 w-2 h-2 bg-gray-500 rounded-full"></span>
+                                <span class="dot animate-bounce-slow3 w-2 h-2 bg-gray-500 rounded-full"></span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            chatContainer.appendChild(messageDiv);
+
+            // After appending, highlight code blocks and add copy buttons
+            highlightAndAddCopyButtons(messageDiv);
+            scrollToBottom();
+        }
+
+        // Function to highlight code blocks and add copy buttons
+        function highlightAndAddCopyButtons(element) {
+            // Re-run Prism.js on the new content within this element
+            // Using Prism.highlightAllUnder for efficient highlighting of new content
+            Prism.highlightAllUnder(element);
+
+            // Add copy buttons to each <pre><code> block
+            element.querySelectorAll('pre > code').forEach((codeBlock, index) => {
+                const pre = codeBlock.parentNode; // The <pre> element
+
+                // Avoid processing the same code block multiple times
+                if (pre.classList.contains('code-block-processed')) {
+                    return;
+                }
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'relative mt-4 mb-4'; // Add margin for spacing around code blocks
+                pre.parentNode.insertBefore(wrapper, pre);
+                wrapper.appendChild(pre);
+
+                const copyButton = document.createElement('button');
+                copyButton.className = 'absolute top-2 right-2 p-1 bg-gray-700 hover:bg-gray-600 rounded-md text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200';
+                copyButton.setAttribute('aria-label', 'Copy code to clipboard');
+                copyButton.innerHTML = `
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002-2h2a2 2 0 002 2m0 0h2a2 2 0 012 2v3m2 2l-4 4m-4-4l-4 4"></path></svg>
+                `;
+
+                copyButton.onclick = () => {
+                    navigator.clipboard.writeText(codeBlock.innerText).then(() => {
+                        const originalSvg = copyButton.innerHTML;
+                        copyButton.innerHTML = '<svg class="h-4 w-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>'; // Checkmark icon
+                        setTimeout(() => {
+                            copyButton.innerHTML = originalSvg;
+                        }, 1500); // Revert after 1.5 seconds
+                    }).catch(err => {
+                        console.error('Failed to copy text: ', err);
+                        // Optionally, add a visual cue for failure
+                    });
+                };
+
+                wrapper.appendChild(copyButton);
+                pre.classList.add('code-block-processed'); // Mark as processed
+            });
+        }
+
+        // --- Event Listeners and Initial Load (Ideally in client.js) ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            const sidebar = document.getElementById('sidebar');
+            const menuButton = document.getElementById('menu-button');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            const chatContainer = document.getElementById('chat-container');
+            const skeleton = document.getElementById('chat-skeleton');
+            const userInput = document.getElementById('userInput');
+            const sendButton = document.getElementById('sendButton');
+            const newChatBtn = document.getElementById('new-chat-btn');
+            const clearChatBtn = document.getElementById('clear-chat-btn');
+
+            // Sidebar toggle logic
+            window.toggleSidebar = () => { // Make global for onclick in EJS
+                sidebar.classList.toggle('-translate-x-full');
+                sidebarOverlay.classList.toggle('hidden');
+            };
+
+            if (menuButton) {
+                menuButton.addEventListener('click', toggleSidebar);
+            }
+
+            // Close sidebar on md screens if it's open (e.g., if user resizes browser)
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 768) { // Tailwind's 'md' breakpoint
+                    sidebar.classList.remove('-translate-x-full');
+                    sidebarOverlay.classList.add('hidden');
+                }
+            });
+
+            // Initial state for send button
+            updateSendButtonState();
+
+            // Event listener for send button
+            if (sendButton) {
+                sendButton.addEventListener('click', sendMessage);
+            }
+            // Event listener for new chat button
+            if (newChatBtn) {
+                newChatBtn.addEventListener('click', async () => {
+                    // Logic to start a new conversation (clear chat, reset state)
+                    chatContainer.innerHTML = ''; // Clear existing messages
+                    hideTypingIndicator();
+                    appendMessage("Welcome to Coatcard AI! How can I help you with your code today?", 'ai');
+                    // You might want to call an API to create a new chat session on the backend
+                    // and update the chat history sidebar.
+                    // For now, just a client-side clear
+                    updateChatTitle('New Conversation'); // Reset title
+                    clearChatBtn.disabled = true; // Disable clear button for empty chat
+                    userInput.value = '';
+                    updateSendButtonState();
+                    autoResizeTextarea(userInput);
+                    if (window.innerWidth < 768) toggleSidebar(); // Close sidebar on mobile after new chat
+                });
+            }
+
+            // Event listener for clear chat button
+            if (clearChatBtn) {
+                clearChatBtn.addEventListener('click', () => {
+                    showConfirmationModal('Clear Conversation', 'Are you sure you want to clear this conversation? This action cannot be undone.', () => {
+                        chatContainer.innerHTML = '';
+                        hideTypingIndicator();
+                        appendMessage("Conversation cleared. How can I assist you now?", 'ai');
+                        // You might also want to send a request to your backend to delete/archive the current chat history
+                        updateChatTitle('New Conversation'); // Reset title
+                        clearChatBtn.disabled = true; // Disable clear button for empty chat
+                    });
+                });
+            }
+
+            // Function to update chat title (e.g., from chat history item)
+            window.updateChatTitle = (title) => {
+                document.getElementById('chat-title').innerText = title;
+            };
+
+            // Simulate loading chat history (replace with actual fetch from your backend)
+            // Show skeleton initially
+            if (skeleton) skeleton.classList.remove('hidden');
+
+            try {
+                // Assuming an endpoint to load the currently active chat or the latest chat
+                const response = await fetch('/api/chat/history/active');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const history = await response.json();
+
+                // Clear skeleton once history is fetched
+                if (skeleton) skeleton.classList.add('hidden');
+
+                if (history && history.messages && history.messages.length > 0) {
+                    history.messages.forEach(msg => {
+                        appendMessage(msg.content, msg.role); // Assuming msg.role is 'user' or 'ai'
+                    });
+                    updateChatTitle(history.title || 'Conversation'); // Set chat title from history
+                    clearChatBtn.disabled = false; // Enable clear button if there's history
+                } else {
+                    // Display a welcome message if no history or empty chat
+                    appendMessage("Welcome to Coatcard AI! Ask me anything about coding.", 'ai');
+                    clearChatBtn.disabled = true; // Disable clear button
+                }
+            } catch (error) {
+                console.error('Error fetching chat history:', error);
+                if (skeleton) skeleton.classList.add('hidden'); // Hide skeleton even on error
+                appendMessage("Failed to load chat history. Please refresh or start a new chat.", 'ai');
+                clearChatBtn.disabled = true; // Disable clear button on error
+            }
+
+            // --- Simplified sendMessage function (replace with your actual server interaction) ---
+            async function sendMessage() {
+                const userInput = document.getElementById('userInput');
+                const message = userInput.value.trim();
+                if (!message) return;
+
+                appendMessage(message, 'user'); // Add user message to chat container
+                userInput.value = ''; // Clear input
+                updateSendButtonState(); // Disable send button
+                autoResizeTextarea(userInput); // Reset textarea height
+
+                showTypingIndicator(); // Show typing indicator
+
+                try {
+                    // Replace with your actual API call to your Node.js backend
+                    const response = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: message, userPreferences: userDetails.preferences }) // Pass preferences if needed by AI
+                    });
+                    const data = await response.json();
+
+                    hideTypingIndicator(); // Hide typing indicator
+                    appendMessage(data.aiResponse, 'ai'); // Add AI message
+
+                    // After the first message, enable the clear chat button
+                    clearChatBtn.disabled = false;
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    hideTypingIndicator(); // Hide indicator even on error
+                    appendMessage("Sorry, I couldn't process that. Please try again or rephrase.", 'ai'); // Display error message
+                }
+            }
+        });
+    </script>
 </body>
 </html>
