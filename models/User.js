@@ -71,8 +71,6 @@ const UserSchema = new mongoose.Schema(
 );
 
 // --- Indexing for Performance ---
-UserSchema.index({ email: 1 });
-UserSchema.index({ username: 1 });
 UserSchema.index({ otp: 1, otpExpires: 1 });
 UserSchema.index({ resetPasswordToken: 1, resetPasswordExpires: 1 });
 
