@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="transition duration-300">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,10 +15,13 @@
   <link rel="icon" href="/favicon.svg" />
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col md:flex-row font-[Inter] transition-colors duration-300">
+
+<body
+  class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col md:flex-row font-[Inter] transition-colors duration-300">
 
   <!-- Topbar (Mobile) -->
-  <header class="md:hidden flex justify-between items-center p-4 bg-yellow-400 dark:bg-yellow-600 shadow-md z-40 sticky top-0">
+  <header
+    class="md:hidden flex justify-between items-center p-4 bg-yellow-400 dark:bg-yellow-600 shadow-md z-40 sticky top-0">
     <button id="menu-toggle" class="text-gray-800 dark:text-gray-100">
       <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M4 6h16M4 12h16M4 18h16" />
@@ -44,11 +48,14 @@
 
     <div class="border-t border-yellow-200 dark:border-gray-700 pt-4 flex items-center space-x-3">
       <a href="/profile" title="Edit Profile">
-        <img src="<%= user.profileImage ? `data:${user.profileImage.contentType};base64,${user.profileImage.data}` : '/images/default-avatar.png' %>"
+        <img
+          src="<%= user.profileImage ? `data:${user.profileImage.contentType};base64,${user.profileImage.data}` : '/images/default-avatar.png' %>"
           class="h-10 w-10 rounded-full object-cover hover:ring-2 hover:ring-yellow-400" />
       </a>
       <div>
-        <p class="font-semibold"><%= user.username %></p>
+        <p class="font-semibold">
+          <%= user.username %>
+        </p>
         <a href="/auth/logout" class="text-sm text-yellow-600 dark:text-yellow-400 hover:text-yellow-500">Logout</a>
       </div>
     </div>
@@ -78,10 +85,9 @@
     <!-- Chat Input -->
     <div class="sticky bottom-0 bg-white dark:bg-gray-900 p-4 border-t border-gray-200 dark:border-gray-700">
       <div class="relative bg-gray-100 dark:bg-gray-800 rounded-full border border-gray-300 dark:border-gray-700">
-        <input id="userInput"
-          type="text"
-          placeholder="Message Coatcard AI..."
+        <input id="userInput" type="text" placeholder="Message Coatcard AI..."
           class="w-full bg-transparent text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 rounded-full py-3 pl-5 pr-14 focus:outline-none focus:ring-2 focus:ring-yellow-400 dark:focus:ring-yellow-600">
+
         <button id="sendButton"
           class="absolute right-2 top-1/2 -translate-y-1/2 bg-yellow-400 dark:bg-yellow-600 text-white p-2 rounded-full hover:bg-yellow-500 disabled:bg-yellow-200">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -160,4 +166,5 @@
   <!-- Load Chat Client -->
   <script src="/js/client.js"></script>
 </body>
+
 </html>
