@@ -1,0 +1,5 @@
+<!-- public/favicon.svg -->
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="12" fill="#FACC15"/> <!-- Tailwind yellow-400 -->
+  <path d="M32 10C26 10 21.5 14.5 21.5 20.5C21.5 25.5 25 29.5 29.5 30.5V35H34.5V30.5C39 29.5 42.5 25.5 42.5 20.5C42.5 14.5 38 10 32 10ZM30 50H34V46H30V50ZM28 54H36V52H28V54ZM26 58H38V56H26V58Z" fill="#1F2937"/> <!-- gray-800 -->
+</svg>
