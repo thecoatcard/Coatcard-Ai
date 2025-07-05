@@ -106,9 +106,9 @@ On user request:
 
 
     userInput.addEventListener('input', () => {
-    userInput.style.height = 'auto'; // Reset to natural height
-    userInput.style.height = `${userInput.scrollHeight}px`; // Expand to fit
-});
+        userInput.style.height = 'auto'; // Reset to natural height
+        userInput.style.height = `${userInput.scrollHeight}px`; // Expand to fit
+    });
 
 
     async function loadChatHistoryList() {
@@ -254,21 +254,21 @@ On user request:
     }
 
     async function sendMessage() {
-    const messageText = userInput.value.trim();
-    if (messageText === '' || !activeChatId) return;
+        const messageText = userInput.value.trim();
+        if (messageText === '' || !activeChatId) return;
 
-    displayMessage(messageText, 'user');
-    userInput.value = '';
-    
-    // Reset height after sending
-    userInput.style.height = 'auto';
+        displayMessage(messageText, 'user');
+        userInput.value = '';
 
-    const isFirstMessage = localHistory.length === 0;
-    localHistory.push({ role: "user", parts: [{ text: messageText }] });
+        // Reset height after sending
+        userInput.style.height = 'auto';
 
-    showLoadingIndicator();
-    await getGeminiResponse(localHistory, isFirstMessage ? messageText : null);
-}
+        const isFirstMessage = localHistory.length === 0;
+        localHistory.push({ role: "user", parts: [{ text: messageText }] });
+
+        showLoadingIndicator();
+        await getGeminiResponse(localHistory, isFirstMessage ? messageText : null);
+    }
 
 
     async function getGeminiResponse(historyPayload, firstMessage = null) {
@@ -334,34 +334,44 @@ On user request:
         chatContainer.innerHTML = `<div id="welcome-placeholder" class="flex justify-center items-center h-full"><p class="text-gray-500">Send a message to start the conversation!</p></div>`;
     }
 
-    function displayMessage(message, sender) {
-        const placeholder = document.getElementById('welcome-placeholder');
-        if (placeholder) placeholder.remove();
+ function displayMessage(message, sender) {
+  const placeholder = document.getElementById('welcome-placeholder');
+  if (placeholder) placeholder.remove();
 
-        const wrapper = document.createElement('div');
-        wrapper.classList.add('message-fade-in');
-        if (sender === 'user') {
-            const formatted = marked.parse(message); // Markdown render with code blocks etc.
-            wrapper.className = 'flex items-start gap-4 justify-end message-fade-in';
-            wrapper.innerHTML = `
-        <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg rounded-tl-none max-w-full prose prose-tight dark:prose-invert prose-sm m-0 leading-tight border border-gray-300 dark:border-gray-700">
+  const wrapper = document.createElement('div');
+  wrapper.classList.add('message-fade-in');
 
-            ${formatted}
-        </div>
-        <div class="flex-shrink-0 h-9 w-9 rounded-full bg-gray-600 flex items-center justify-center">
-            <img src="${userDetails.profileImage}" class="h-full w-full object-cover rounded-full" alt="User Avatar">
-        </div>`;
-            addCopyButtons(wrapper);
-        }
-        else {
-            const formatted = marked.parse(message);
-            wrapper.className = 'flex items-start gap-4 message-fade-in';
-            wrapper.innerHTML = `<div class="flex-shrink-0 h-9 w-9 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center shadow-md"><svg class="w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-9.995 9.083A10 10 0 0 0 12 22a10 10 0 0 0 10-10A10 10 0 0 0 12 2zM8.5 10a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm7 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg></div><div class="bg-yellow-50 p-4 rounded-lg rounded-tl-none max-w-full prose shadow-md border border-yellow-200">${formatted}</div>`;
-            addCopyButtons(wrapper);
-        }
-        chatContainer.appendChild(wrapper);
-        scrollToBottom();
-    }
+  const formatted = marked.parse(message); // Converts markdown to HTML
+
+  if (sender === 'user') {
+    wrapper.className = 'flex items-start gap-4 justify-end message-fade-in';
+    wrapper.innerHTML = `
+      <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg rounded-tl-none max-w-full prose prose-tight dark:prose-invert prose-sm m-0 leading-tight border border-gray-300 dark:border-gray-700">
+        ${formatted}
+      </div>
+      <div class="flex-shrink-0 h-9 w-9 rounded-full bg-gray-600 flex items-center justify-center">
+        <img src="${userDetails.profileImage}" class="h-full w-full object-cover rounded-full" alt="User Avatar">
+      </div>
+    `;
+  } else {
+    wrapper.className = 'flex items-start gap-4 message-fade-in';
+    wrapper.innerHTML = `
+      <div class="flex-shrink-0 h-9 w-9 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center shadow-md">
+        <svg class="w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2a10 10 0 0 0-9.995 9.083A10 10 0 0 0 12 22a10 10 0 0 0 10-10A10 10 0 0 0 12 2zM8.5 10a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm7 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+        </svg>
+      </div>
+      <div class="bg-yellow-50 p-4 rounded-lg rounded-tl-none max-w-full prose shadow-md border border-yellow-200">
+        ${formatted}
+      </div>
+    `;
+  }
+
+  chatContainer.appendChild(wrapper);
+  addCopyButtons(wrapper);
+  scrollToBottom();
+}
+
     function addCopyButtons(msgElement) {
         msgElement.querySelectorAll('pre').forEach(block => {
             const btn = document.createElement('button');
