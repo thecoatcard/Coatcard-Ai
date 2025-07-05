@@ -6,6 +6,47 @@ const multer = require('multer');
 const nodemailer = require('nodemailer');
 const User = require('../models/User');
 
+
+const createStyledEmail = (title, preheader, bodyContent, button) => {
+    return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body { font-family: 'Inter', Arial, sans-serif; margin: 0; padding: 0; background-color: #fefce8; }
+            .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border: 1px solid #fde68a; border-radius: 12px; overflow: hidden; }
+            .header { background-color: #facc15; padding: 20px; text-align: center; color: #422006; }
+            .header h1 { margin: 0; font-size: 24px; }
+            .content { padding: 30px; color: #374151; line-height: 1.6; }
+            .content p { margin: 0 0 15px 0; }
+            .otp { font-size: 32px; font-weight: bold; color: #d97706; text-align: center; letter-spacing: 5px; margin: 20px 0; }
+            .button-container { text-align: center; margin: 30px 0; }
+            .button { background-color: #facc15; color: #422006; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; }
+            .footer { background-color: #fef3c7; padding: 20px; text-align: center; font-size: 12px; color: #78350f; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header"><h1>Coatcard AI</h1></div>
+            <div class="content">
+                <p style="font-size: 18px; font-weight: bold;">${title}</p>
+                <p>${preheader}</p>
+                ${bodyContent}
+                ${button ? `<div class="button-container"><a href="${button.url}" class="button">${button.text}</a></div>` : ''}
+                <p>If you did not request this, please ignore this email.</p>
+                <p>Thanks,<br>The Coatcard AI Team</p>
+            </div>
+            <div class="footer">
+                &copy; ${new Date().getFullYear()} Coatcard AI. All rights reserved.
+            </div>
+        </div>
+    </body>
+    </html>`;
+};
+
+
 // Configure Multer for image upload (memory buffer for DB storage)
 const upload = multer({
     storage: multer.memoryStorage(),
@@ -56,8 +97,14 @@ router.post('/register', (req, res) => {
                     to: email,
                     from: `Coatcard AI <${process.env.EMAIL_USER}>`,
                     subject: 'Verify Your Email Address',
-                    text: `Your OTP is: ${otp}`
+                    html: createStyledEmail(
+                        'Verify Your Email Address',
+                        'Complete your registration with Coatcard AI',
+                        `<p>Use the following OTP to verify your email address:</p><div class="otp">${otp}</div>`,
+                        null
+                    )
                 });
+
                 return res.redirect(`/verify?email=${email}`);
             }
 
@@ -137,7 +184,13 @@ router.post('/resend-otp', async (req, res) => {
             to: email,
             from: `Coatcard AI <${process.env.EMAIL_USER}>`,
             subject: 'New OTP',
-            text: `Your new OTP is: ${otp}`
+            html: createStyledEmail(
+                'New OTP Requested',
+                'Here is your new verification code',
+                `<p>Your new OTP is:</p><div class="otp">${otp}</div>`,
+                null
+            )
+
         });
         res.status(200).json({ message: 'New OTP sent successfully.' });
     } catch (err) {
@@ -223,7 +276,13 @@ router.post('/request-otp-login', async (req, res) => {
             to: email,
             from: `Coatcard AI <${process.env.EMAIL_USER}>`,
             subject: 'Login Code',
-            text: `Your login OTP is: ${otp}`
+            html: createStyledEmail(
+                'OTP Login Request',
+                'Use this code to sign in to Coatcard AI',
+                `<p>Your one-time login code is:</p><div class="otp">${otp}</div>`,
+                null
+            )
+
         });
 
         res.redirect(`/otp-login?email=${email}`);
@@ -292,7 +351,16 @@ router.post('/forgot', async (req, res) => {
             to: user.email,
             from: `Coatcard AI <${process.env.EMAIL_USER}>`,
             subject: 'Reset Password',
-            text: `Click here to reset your password: ${baseUrl}/reset/${token}`
+            html: createStyledEmail(
+                'Reset Your Password',
+                'You requested to reset your password',
+                `<p>Click the button below to reset your password:</p>`,
+                {
+                    url: `${baseUrl}/reset/${token}`,
+                    text: 'Reset Password'
+                }
+            )
+
         });
 
         res.render('forgot', { msg: 'Reset link sent to your email.' });
