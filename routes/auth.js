@@ -147,33 +147,59 @@ router.post('/resend-otp', async (req, res) => {
 });
 
 // ----- LOGIN WITH PASSWORD -----
+// ----- LOGIN WITH PASSWORD -----
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
-    try {
-        const user = await User.findOne({ email: email.toLowerCase() }).select('+otp +otpExpires');
-        if (!user || !(await user.matchPassword(password)))
-            return res.render('login', { msg: 'Invalid credentials', email });
 
-        if (!user.isVerified)
-            return res.render('login', { msg: 'Please verify your email first.', showVerifyLink: true, email });
+    try {
+        // Normalize email for consistent DB lookup
+        const user = await User.findOne({ email: email.toLowerCase() }).select('+otp +otpExpires');
+
+        // Handle case: user not found or password doesn't match
+        if (!user || !(await user.matchPassword(password))) {
+            return res.render('login', {
+                msg: 'Invalid email or password',
+                email
+            });
+        }
+
+        // Handle case: user not verified yet
+        if (!user.isVerified) {
+            return res.render('login', {
+                msg: 'Please verify your email before logging in.',
+                showVerifyLink: true,
+                email
+            });
+        }
+
+        // ✅ Safely prepare profileImage if present
+        const hasProfileImage = user.profileImage?.data;
 
         req.session.user = {
             id: user._id,
             username: user.username,
-            profileImage: user.profileImage ? {
-                data: user.profileImage.data.toString('base64'),
-                contentType: user.profileImage.contentType
-            } : null,
+            profileImage: hasProfileImage
+                ? {
+                    data: hasProfileImage.toString('base64'),
+                    contentType: user.profileImage.contentType
+                }
+                : null,
             preferences: user.preferences,
             fieldOfWork: user.fieldOfWork,
             goal: user.goal
         };
-        res.redirect('/chat');
+
+        return res.redirect('/chat');
+
     } catch (err) {
         console.error('Login error:', err);
-        res.status(500).send('Server error');
+        return res.status(500).render('login', {
+            msg: 'Server error during login. Please try again later.',
+            email
+        });
     }
 });
+
 
 // ----- REQUEST OTP LOGIN -----
 router.post('/request-otp-login', async (req, res) => {
