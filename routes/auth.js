@@ -94,15 +94,25 @@ router.post('/register', (req, res) => {
 router.post('/verify', async (req, res) => {
     const { email, otp } = req.body;
     try {
-        const user = await User.findOne({ email });
-        if (!user || !user.otp) return res.render('verify', { email, msg: 'Verification failed. Please request a new OTP.' });
-        if (user.otpExpires < Date.now()) return res.render('verify', { email, msg: 'OTP expired. Please request a new one.' });
-        if (user.otp !== otp.trim()) return res.render('verify', { email, msg: 'Incorrect OTP.' });
+        const user = await User.findOne({ email }).select('+otp +otpExpires');
+
+        if (!user || !user.otp) {
+            return res.render('verify', { email, msg: 'Verification failed. Please request a new OTP.' });
+        }
+
+        if (user.otpExpires < Date.now()) {
+            return res.render('verify', { email, msg: 'OTP expired. Please request a new one.' });
+        }
+
+        if (user.otp !== otp.trim()) {
+            return res.render('verify', { email, msg: 'Incorrect OTP.' });
+        }
 
         user.isVerified = true;
         user.otp = undefined;
         user.otpExpires = undefined;
         await user.save();
+
         res.redirect('/login?status=verified');
     } catch (err) {
         console.error('OTP verification error:', err);
@@ -110,11 +120,12 @@ router.post('/verify', async (req, res) => {
     }
 });
 
+
 // ----- RESEND OTP -----
 router.post('/resend-otp', async (req, res) => {
     const { email } = req.body;
     try {
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).select('+otp +otpExpires');
         if (!user) return res.status(404).json({ message: 'User not found.' });
         if (user.isVerified) return res.status(400).json({ message: 'Account already verified.' });
 
@@ -139,7 +150,7 @@ router.post('/resend-otp', async (req, res) => {
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     try {
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).select('+otp +otpExpires');
         if (!user || !(await user.matchPassword(password)))
             return res.render('login', { msg: 'Invalid credentials', email });
 
@@ -168,7 +179,7 @@ router.post('/login', async (req, res) => {
 router.post('/request-otp-login', async (req, res) => {
     const { email } = req.body;
     try {
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).select('+otp +otpExpires');
         if (!user) {
             return res.render('login', { msg: 'If account exists, OTP has been sent.', email });
         }
@@ -200,7 +211,7 @@ router.post('/request-otp-login', async (req, res) => {
 router.post('/otp-login', async (req, res) => {
     const { email, otp } = req.body;
     try {
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).select('+otp +otpExpires');
         if (!user || !user.otp) return res.render('otp-login', { email, msg: 'Login failed. Request a new OTP.' });
         if (user.otpExpires < Date.now()) return res.render('otp-login', { email, msg: 'OTP expired.' });
         if (user.otp !== otp.trim()) return res.render('otp-login', { email, msg: 'Invalid OTP.' });

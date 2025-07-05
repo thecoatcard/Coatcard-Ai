@@ -1,0 +1,894 @@
+still same problem i will give complete code just check what is problem
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Coatcard AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-yellow-50 flex items-center justify-center h-screen">
+    <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-lg">
+        
+        <div id="password-login-view">
+            <h2 class="text-3xl font-bold text-center text-yellow-900">Sign in with Password</h2>
+            
+            <!-- Message Area -->
+            <div id="message-area" class="text-center mt-4">
+                 <% if (locals.msg) { %>
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <span class="block sm:inline"><%= msg %></span>
+                        
+                        <!-- THIS IS THE CRITICAL FIX: Conditionally show Verify link -->
+                        <% if (locals.showVerifyLink) { %>
+                            <a href="/verify?email=<%= encodeURIComponent(locals.email || '') %>" class="block font-bold text-blue-600 hover:text-blue-800 mt-2">Click here to verify your account</a>
+                        <% } %>
+                    </div>
+                <% } %>
+            </div>
+
+            <form class="mt-6 space-y-6" action="/auth/login" method="POST">
+                <!-- Password login fields -->
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <input id="email-address" name="email" type="email" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-yellow-500 focus:border-yellow-500" placeholder="Email address" value="<%= locals.email || '' %>">
+                    </div>
+                    <div>
+                        <input id="password" name="password" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-yellow-500 focus:border-yellow-500" placeholder="Password">
+                    </div>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <a href="/forgot" class="font-medium text-yellow-600 hover:text-yellow-500">Forgot password?</a>
+                </div>
+                <div>
+                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-stone-800 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                        Sign in
+                    </button>
+                </div>
+            </form>
+            <div class="relative flex py-5 items-center">
+                <div class="flex-grow border-t border-gray-300"></div>
+                <span class="flex-shrink mx-4 text-gray-400">Or</span>
+                <div class="flex-grow border-t border-gray-300"></div>
+            </div>
+            <button id="show-otp-btn" class="w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                Sign in with OTP
+            </button>
+        </div>
+
+        <div id="otp-login-view" class="hidden">
+            <h2 class="text-3xl font-bold text-center text-yellow-900">Sign in with OTP</h2>
+            <p class="text-center text-sm text-gray-600 mt-2">Enter your email to receive a login code.</p>
+            <form class="mt-8 space-y-6" action="/auth/request-otp-login" method="POST">
+                <!-- OTP login fields -->
+                <div class="rounded-md shadow-sm">
+                    <input id="otp-email" name="email" type="email" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500" placeholder="Email address">
+                </div>
+                <div>
+                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-stone-800 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                        Send Login Code
+                    </button>
+                </div>
+            </form>
+             <div class="relative flex py-5 items-center">
+                <div class="flex-grow border-t border-gray-300"></div>
+                <span class="flex-shrink mx-4 text-gray-400">Or</span>
+                <div class="flex-grow border-t border-gray-300"></div>
+            </div>
+            <button id="show-password-btn" class="w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                Sign in with Password
+            </button>
+        </div>
+        
+        <p class="text-center text-sm mt-6">
+            Don't have an account? <a href="/register" class="font-medium text-yellow-600 hover:text-yellow-500">Register here</a>
+        </p>
+    </div>
+    <script>
+        const passwordView = document.getElementById('password-login-view');
+        const otpView = document.getElementById('otp-login-view');
+        const showOtpBtn = document.getElementById('show-otp-btn');
+        const showPasswordBtn = document.getElementById('show-password-btn');
+
+        showOtpBtn.addEventListener('click', () => {
+            passwordView.classList.add('hidden');
+            otpView.classList.remove('hidden');
+        });
+
+        showPasswordBtn.addEventListener('click', () => {
+            otpView.classList.add('hidden');
+            passwordView.classList.remove('hidden');
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const messageArea = document.getElementById('message-area');
+            if (urlParams.get('status') === 'password_reset_success') {
+                messageArea.innerHTML = `<div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">Password has been reset successfully. Please log in.</div>`;
+            } else if (urlParams.get('status') === 'verified') {
+                 messageArea.innerHTML = `<div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">Your account has been verified. Please log in.</div>`;
+            }
+        });
+    </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Enter Login Code - Coatcard AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-yellow-50 flex items-center justify-center h-screen">
+    <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-lg">
+        <h2 class="text-3xl font-bold text-center text-yellow-900">Enter Login Code</h2>
+        <p class="text-center text-sm text-gray-600">We've sent a 6-digit login code to <strong><%= email %></strong>. The code is valid for 10 minutes.</p>
+        
+        <% if (locals.msg) { %>
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-center" role="alert">
+                <span class="block sm:inline"><%= msg %></span>
+            </div>
+        <% } %>
+
+        <form class="mt-4 space-y-6" action="/auth/otp-login" method="POST">
+            <input type="hidden" name="email" value="<%= email %>">
+            <div class="rounded-md shadow-sm">
+                <label for="otp" class="sr-only">Login Code</label>
+                <input id="otp" name="otp" type="text" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500" placeholder="6-Digit Code">
+            </div>
+            <div>
+                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-stone-800 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                    Login
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Coatcard AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .file-input-label {
+            display: block;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            background-color: #f3f4f6;
+            color: #4b5563;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .file-input-label:hover {
+            background-color: #e5e7eb;
+        }
+    </style>
+</head>
+<body class="bg-yellow-50 flex items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="w-full max-w-lg p-8 space-y-8 bg-white rounded-2xl shadow-lg">
+        <h2 class="text-3xl font-bold text-center text-yellow-900">Create Your Account</h2>
+
+
+        <form class="mt-8 space-y-6" action="/auth/register" method="POST" enctype="multipart/form-data">
+
+            <div class="rounded-md shadow-sm -space-y-px">
+                <div>
+                    <label for="username" class="sr-only">Username</label>
+                    <input id="username" name="username" type="text" required
+                        class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm"
+                        placeholder="Username">
+                </div>
+                <div>
+                    <label for="email-address" class="sr-only">Email address</label>
+                    <input id="email-address" name="email" type="email" required
+                        class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm"
+                        placeholder="Email address">
+                </div>
+                <div>
+                    <label for="password" class="sr-only">Password</label>
+                    <input id="password" name="password" type="password" required
+                        class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm"
+                        placeholder="Password">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
+                <div class="flex justify-center mb-4">
+                    <img id="image-preview" class="w-24 h-24 rounded-full object-cover border border-gray-300" src="/images/default-avatar.png" alt="Profile Preview">
+                </div>
+                <label for="profileImage" class="file-input-label text-center">
+                    <span id="file-name">Choose a file</span>
+                </label>
+                <input id="profileImage" name="profileImage" type="file" class="sr-only" accept="image/*">
+                <p class="mt-1 text-xs text-gray-500 text-center">Max 5MB (JPEG, PNG, GIF)</p>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-sm font-medium text-gray-700">Tell us about yourself</h3>
+                <div>
+                    <label for="fieldOfWork" class="block text-sm font-medium text-gray-700">My field is...</label>
+                    <select id="fieldOfWork" name="fieldOfWork"
+                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm rounded-md">
+                        <option>Software Engineering</option>
+                        <option>Data Science</option>
+                        <option>Web Development</option>
+                        <option>Machine Learning</option>
+                        <option>Cybersecurity</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700">I'm here to...</label>
+                <div class="flex flex-wrap gap-2">
+                    <label class="flex items-center space-x-2 border border-gray-300 rounded-full px-3 py-1 cursor-pointer hover:bg-yellow-100 has-[:checked]:bg-yellow-200 has-[:checked]:border-yellow-400">
+                        <input type="radio" name="goal" value="Learn Concepts" class="form-radio text-yellow-500 focus:ring-yellow-500" required>
+                        <span>Learn Concepts</span>
+                    </label>
+                    <label class="flex items-center space-x-2 border border-gray-300 rounded-full px-3 py-1 cursor-pointer hover:bg-yellow-100 has-[:checked]:bg-yellow-200 has-[:checked]:border-yellow-400">
+                        <input type="radio" name="goal" value="Solve Problems" class="form-radio text-yellow-500 focus:ring-yellow-500" required>
+                        <span>Solve Problems</span>
+                    </label>
+                    <label class="flex items-center space-x-2 border border-gray-300 rounded-full px-3 py-1 cursor-pointer hover:bg-yellow-100 has-[:checked]:bg-yellow-200 has-[:checked]:border-yellow-400">
+                        <input type="radio" name="goal" value="Prepare for Interviews" class="form-radio text-yellow-500 focus:ring-yellow-500" required>
+                        <span>Prepare for Interviews</span>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <button type="submit"
+                    class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-stone-800 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                    Register
+                </button>
+            </div>
+        </form>
+        <p class="text-center text-sm">
+            Already have an account? <a href="/login" class="font-medium text-yellow-600 hover:text-yellow-500">Log in</a>
+        </p>
+    </div>
+
+    <script>
+        document.getElementById('profileImage').addEventListener('change', function(event) {
+            var fileName = this.files[0] ? this.files[0].name : "Choose a file";
+            document.getElementById('file-name').textContent = fileName;
+
+            // UPDATED: Image preview logic
+            const preview = document.getElementById('image-preview');
+            const file = event.target.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                }
+                reader.readAsDataURL(file); // Read file as a data URL
+            } else {
+                preview.src = "/images/default-avatar.png"; // Fallback to default if no file selected
+            }
+        });
+
+        // Ensure a goal is selected by default if none is (optional, but good UX if 'required' is used)
+        document.addEventListener('DOMContentLoaded', () => {
+            const goalRadios = document.querySelectorAll('input[name="goal"]');
+            const anyGoalChecked = Array.from(goalRadios).some(radio => radio.checked);
+            if (!anyGoalChecked && goalRadios.length > 0) {
+                goalRadios[0].checked = true; // Check the first one by default if none selected
+            }
+        });
+    </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reset Password - Coatcard AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-yellow-50 flex items-center justify-center h-screen">
+    <div class="w-full max-w-md p-8 space-y-8 bg-white rounded-2xl shadow-lg">
+        <h2 class="text-3xl font-bold text-center text-yellow-900">Enter New Password</h2>
+
+        <% if (locals.msg) { %>
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-center" role="alert">
+                <span class="block sm:inline"><%= msg %></span>
+            </div>
+        <% } %>
+
+        <form class="mt-8 space-y-6" action="/auth/reset/<%= token %>" method="POST">
+            <div class="rounded-md shadow-sm -space-y-px">
+                <div>
+                    <label for="password" class="sr-only">New Password</label>
+                    <input id="password" name="password" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 focus:z-10 sm:text-sm" placeholder="New Password">
+                </div>
+                <div>
+                    <label for="confirm-password" class="sr-only">Confirm Password</label>
+                    <input id="confirm-password" name="confirmPassword" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 focus:z-10 sm:text-sm" placeholder="Confirm New Password">
+                </div>
+            </div>
+            <div>
+                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-stone-800 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                    Update Password
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify Your Email - Coatcard AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-yellow-50 flex items-center justify-center h-screen">
+    <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-lg">
+        <h2 class="text-3xl font-bold text-center text-yellow-900">Check Your Email</h2>
+        <p class="text-center text-sm text-gray-600">We've sent a 6-digit verification code to <strong id="user-email"><%= email %></strong>. The code is valid for 10 minutes.</p>
+        
+        <div id="message-area" class="text-center">
+            <% if (locals.msg) { %>
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline"><%= msg %></span>
+                </div>
+            <% } %>
+        </div>
+
+        <form class="mt-4 space-y-6" action="/auth/verify" method="POST">
+            <input type="hidden" name="email" value="<%= email %>">
+            <div class="rounded-md shadow-sm">
+                <div>
+                    <label for="otp" class="sr-only">Verification Code</label>
+                    <input id="otp" name="otp" type="text" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 focus:z-10 sm:text-sm" placeholder="6-Digit Code">
+                </div>
+            </div>
+            <div>
+                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-stone-800 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                    Verify Account
+                </button>
+            </div>
+        </form>
+
+        <div class="text-center text-sm">
+            <p>Didn't receive the code? 
+                <button id="resend-btn" class="font-medium text-yellow-600 hover:text-yellow-500 disabled:text-gray-400 disabled:cursor-not-allowed">
+                    Resend OTP
+                </button>
+                <span id="timer" class="hidden text-gray-500"></span>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const resendBtn = document.getElementById('resend-btn');
+        const timerSpan = document.getElementById('timer');
+        const messageArea = document.getElementById('message-area');
+        const userEmail = document.getElementById('user-email').textContent;
+        let countdown;
+
+        function startTimer() {
+            let seconds = 60;
+            resendBtn.disabled = true;
+            timerSpan.classList.remove('hidden');
+
+            countdown = setInterval(() => {
+                timerSpan.textContent = `(Resend available in ${seconds}s)`;
+                seconds--;
+                if (seconds < 0) {
+                    clearInterval(countdown);
+                    resendBtn.disabled = false;
+                    timerSpan.classList.add('hidden');
+                }
+            }, 1000);
+        }
+
+        resendBtn.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/auth/resend-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail })
+                });
+                
+                const data = await response.json();
+                
+                let alertColor = response.ok ? 'blue' : 'red';
+                messageArea.innerHTML = `
+                    <div class="bg-${alertColor}-100 border border-${alertColor}-400 text-${alertColor}-700 px-4 py-3 rounded relative" role="alert">
+                        <span class="block sm:inline">${data.message}</span>
+                    </div>`;
+
+                if (response.ok) {
+                    startTimer();
+                }
+
+            } catch (error) {
+                messageArea.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <span class="block sm:inline">An error occurred. Please check your connection.</span>
+                    </div>`;
+            }
+        });
+
+        // Start the timer when the page loads
+        startTimer();
+    </script>
+</body>
+</html>
+
+const express = require('express');
+const router = express.Router();
+const path = require('path');
+const crypto = require('crypto');
+const multer = require('multer');
+const nodemailer = require('nodemailer');
+const User = require('../models/User');
+
+// Configure Multer for image upload (memory buffer for DB storage)
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const filetypes = /jpeg|jpg|png|gif/;
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = filetypes.test(file.mimetype);
+        if (extname && mimetype) return cb(null, true);
+        cb('Only image files are allowed');
+    }
+}).single('profileImage');
+
+// Configure Nodemailer transporter
+const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
+    secure: process.env.EMAIL_PORT == 465,
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
+
+// ----- REGISTRATION -----
+router.post('/register', (req, res) => {
+    upload(req, res, async (err) => {
+        if (err) return res.render('register', { msg: err });
+
+        const { username, email, password, fieldOfWork, goal } = req.body;
+        if (!username || !email || !password || !fieldOfWork || !goal)
+            return res.render('register', { msg: 'All fields are required.' });
+
+        try {
+            const existingUser = await User.findOne({ email });
+
+            const otp = crypto.randomInt(100000, 999999).toString();
+
+            if (existingUser && existingUser.isVerified) {
+                return res.render('register', { msg: 'Email already registered. Please log in.' });
+            }
+
+            if (existingUser && !existingUser.isVerified) {
+                existingUser.otp = otp;
+                existingUser.otpExpires = Date.now() + 10 * 60 * 1000;
+                await existingUser.save();
+                await transporter.sendMail({
+                    to: email,
+                    from: `Coatcard AI <${process.env.EMAIL_USER}>`,
+                    subject: 'Verify Your Email Address',
+                    text: `Your OTP is: ${otp}`
+                });
+                return res.redirect(`/verify?email=${email}`);
+            }
+
+            const newUser = new User({
+                username, email, password, fieldOfWork, goal,
+                otp,
+                otpExpires: Date.now() + 10 * 60 * 1000
+            });
+
+            if (req.file) {
+                newUser.profileImage = {
+                    data: req.file.buffer,
+                    contentType: req.file.mimetype
+                };
+            }
+
+            await newUser.save();
+            await transporter.sendMail({
+                to: email,
+                from: `Coatcard AI <${process.env.EMAIL_USER}>`,
+                subject: 'Verify Your Email Address',
+                text: `Your OTP is: ${otp}`
+            });
+
+            res.redirect(`/verify?email=${email}`);
+        } catch (e) {
+            console.error('Registration error:', e);
+            res.render('register', { msg: 'Something went wrong during registration.' });
+        }
+    });
+});
+
+// ----- VERIFY OTP -----
+router.post('/verify', async (req, res) => {
+    const { email, otp } = req.body;
+    try {
+        const user = await User.findOne({ email });
+        if (!user || !user.otp) return res.render('verify', { email, msg: 'Verification failed. Please request a new OTP.' });
+        if (user.otpExpires < Date.now()) return res.render('verify', { email, msg: 'OTP expired. Please request a new one.' });
+        if (user.otp !== otp.trim()) return res.render('verify', { email, msg: 'Incorrect OTP.' });
+
+        user.isVerified = true;
+        user.otp = undefined;
+        user.otpExpires = undefined;
+        await user.save();
+        res.redirect('/login?status=verified');
+    } catch (err) {
+        console.error('OTP verification error:', err);
+        res.render('verify', { email, msg: 'Verification failed due to a server error.' });
+    }
+});
+
+// ----- RESEND OTP -----
+router.post('/resend-otp', async (req, res) => {
+    const { email } = req.body;
+    try {
+        const user = await User.findOne({ email });
+        if (!user) return res.status(404).json({ message: 'User not found.' });
+        if (user.isVerified) return res.status(400).json({ message: 'Account already verified.' });
+
+        const otp = crypto.randomInt(100000, 999999).toString();
+        user.otp = otp;
+        user.otpExpires = Date.now() + 10 * 60 * 1000;
+        await user.save();
+        await transporter.sendMail({
+            to: email,
+            from: `Coatcard AI <${process.env.EMAIL_USER}>`,
+            subject: 'New OTP',
+            text: `Your new OTP is: ${otp}`
+        });
+        res.status(200).json({ message: 'New OTP sent successfully.' });
+    } catch (err) {
+        console.error('Resend OTP error:', err);
+        res.status(500).json({ message: 'Failed to resend OTP.' });
+    }
+});
+
+// ----- LOGIN WITH PASSWORD -----
+router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const user = await User.findOne({ email });
+        if (!user || !(await user.matchPassword(password)))
+            return res.render('login', { msg: 'Invalid credentials', email });
+
+        if (!user.isVerified)
+            return res.render('login', { msg: 'Please verify your email first.', showVerifyLink: true, email });
+
+        req.session.user = {
+            id: user._id,
+            username: user.username,
+            profileImage: user.profileImage ? {
+                data: user.profileImage.data.toString('base64'),
+                contentType: user.profileImage.contentType
+            } : null,
+            preferences: user.preferences,
+            fieldOfWork: user.fieldOfWork,
+            goal: user.goal
+        };
+        res.redirect('/chat');
+    } catch (err) {
+        console.error('Login error:', err);
+        res.status(500).send('Server error');
+    }
+});
+
+// ----- REQUEST OTP LOGIN -----
+router.post('/request-otp-login', async (req, res) => {
+    const { email } = req.body;
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.render('login', { msg: 'If account exists, OTP has been sent.', email });
+        }
+
+        if (!user.isVerified) {
+            return res.render('login', { msg: 'Verify your account first.', showVerifyLink: true, email });
+        }
+
+        const otp = crypto.randomInt(100000, 999999).toString();
+        user.otp = otp;
+        user.otpExpires = Date.now() + 10 * 60 * 1000;
+        await user.save();
+
+        await transporter.sendMail({
+            to: email,
+            from: `Coatcard AI <${process.env.EMAIL_USER}>`,
+            subject: 'Login Code',
+            text: `Your login OTP is: ${otp}`
+        });
+
+        res.redirect(`/otp-login?email=${email}`);
+    } catch (err) {
+        console.error('Request OTP login error:', err);
+        res.render('login', { msg: 'Something went wrong.', email });
+    }
+});
+
+// ----- LOGIN USING OTP -----
+router.post('/otp-login', async (req, res) => {
+    const { email, otp } = req.body;
+    try {
+        const user = await User.findOne({ email });
+        if (!user || !user.otp) return res.render('otp-login', { email, msg: 'Login failed. Request a new OTP.' });
+        if (user.otpExpires < Date.now()) return res.render('otp-login', { email, msg: 'OTP expired.' });
+        if (user.otp !== otp.trim()) return res.render('otp-login', { email, msg: 'Invalid OTP.' });
+
+        user.otp = undefined;
+        user.otpExpires = undefined;
+        await user.save();
+
+        req.session.user = {
+            id: user._id,
+            username: user.username,
+            profileImage: user.profileImage ? {
+                data: user.profileImage.data.toString('base64'),
+                contentType: user.profileImage.contentType
+            } : null,
+            preferences: user.preferences,
+            fieldOfWork: user.fieldOfWork,
+            goal: user.goal
+        };
+        res.redirect('/chat');
+    } catch (err) {
+        console.error('OTP login error:', err);
+        res.render('otp-login', { email, msg: 'Login failed. Try again.' });
+    }
+});
+
+// ----- LOGOUT -----
+router.get('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            console.error('Logout error:', err);
+            return res.redirect('/chat');
+        }
+        res.clearCookie('connect.sid');
+        res.redirect('/login');
+    });
+});
+
+// ----- FORGOT PASSWORD -----
+router.post('/forgot', async (req, res) => {
+    try {
+        const user = await User.findOne({ email: req.body.email });
+        if (!user) return res.render('forgot', { msg: 'If an account exists, a reset link has been sent.' });
+
+        const token = crypto.randomBytes(20).toString('hex');
+        user.resetPasswordToken = token;
+        user.resetPasswordExpires = Date.now() + 3600000;
+        await user.save();
+
+        const baseUrl = process.env.BASE_URL || `http://${req.headers.host}`;
+        await transporter.sendMail({
+            to: user.email,
+            from: `Coatcard AI <${process.env.EMAIL_USER}>`,
+            subject: 'Reset Password',
+            text: `Click here to reset your password: ${baseUrl}/reset/${token}`
+        });
+
+        res.render('forgot', { msg: 'Reset link sent to your email.' });
+    } catch (err) {
+        console.error('Forgot password error:', err);
+        res.status(500).send('Server error');
+    }
+});
+
+// ----- RESET PASSWORD -----
+router.post('/reset/:token', async (req, res) => {
+    try {
+        const user = await User.findOne({
+            resetPasswordToken: req.params.token,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!user) return res.render('reset', { token: req.params.token, msg: 'Invalid or expired token.' });
+        if (req.body.password !== req.body.confirmPassword)
+            return res.render('reset', { token: req.params.token, msg: 'Passwords do not match.' });
+
+        user.password = req.body.password;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save(); // Assumes password hashing in pre-save hook
+
+        res.redirect('/login?status=reset_success');
+    } catch (err) {
+        console.error('Reset password error:', err);
+        res.status(500).send('Server error');
+    }
+});
+
+module.exports = router;
+
+const express = require('express');
+const router = express.Router();
+const { ensureAuthenticated } = require('../config/auth_middleware');
+const User = require('../models/User');
+
+// @route   GET /
+router.get('/', (req, res) => {
+    if (req.session.user) return res.redirect('/chat');
+    res.render('index');
+});
+
+// @route   GET /login
+router.get('/login', (req, res) => res.render('login', { msg: null }));
+
+// @route   GET /register
+router.get('/register', (req, res) => res.render('register', { msg: null }));
+
+// @route   GET /chat
+router.get('/chat', ensureAuthenticated, (req, res) => res.render('chat'));
+
+// @route   GET /verify
+router.get('/verify', (req, res) => res.render('verify', { email: req.query.email, msg: null }));
+
+// NEW ROUTE for OTP Login Page
+// @route   GET /otp-login
+router.get('/otp-login', (req, res) => res.render('otp-login', { email: req.query.email, msg: null }));
+
+// @route   GET /forgot
+router.get('/forgot', (req, res) => res.render('forgot', { msg: null }));
+
+// @route   GET /reset/:token
+router.get('/reset/:token', async (req, res) => {
+    try {
+        const user = await User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } });
+        if (!user) return res.render('forgot', { msg: 'Password reset token is invalid or has expired.' });
+        res.render('reset', { token: req.params.token, msg: null });
+    } catch (err) {
+        res.redirect('/forgot');
+    }
+});
+
+module.exports = router;
+
+
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+
+const UserSchema = new mongoose.Schema(
+    {
+        username: {
+            type: String,
+            required: [true, 'Username is required'],
+            unique: true,
+            trim: true,
+            minlength: [3, 'Username must be at least 3 characters long'],
+            maxlength: [30, 'Username cannot exceed 30 characters']
+        },
+        email: {
+            type: String,
+            required: [true, 'Email is required'],
+            unique: true,
+            trim: true,
+            lowercase: true,
+            match: [/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/, 'Please enter a valid email address']
+        },
+        password: {
+            type: String,
+            required: [true, 'Password is required'],
+            minlength: [6, 'Password must be at least 6 characters long'],
+        },
+        // --- UPDATED: profileImage for Inline BinData storage ---
+        profileImage: {
+            // No 'default' here, as a default image would also need to be a Buffer
+            // You'd handle default on the frontend or by inserting a default Buffer
+            data: Buffer,      // Stores the binary image data
+            contentType: String // Stores the MIME type (e.g., 'image/png', 'image/jpeg')
+        },
+        fieldOfWork: {
+            type: String,
+            required: [true, 'Field of work is required'],
+            trim: true,
+        },
+        goal: {
+            type: String,
+            required: [true, 'Goal is required'],
+            trim: true,
+        },
+
+        isVerified: { type: Boolean, default: false },
+        otp: { type: String, select: false },
+        otpExpires: { type: Date, select: false },
+        resetPasswordToken: { type: String, select: false },
+        resetPasswordExpires: { type: Date, select: false },
+
+        preferences: {
+            language: { type: String, default: 'C++', trim: true },
+            explanationStyle: {
+                type: String,
+                default: 'bullet',
+                enum: {
+                    values: ['bullet', 'paragraph', 'step-by-step'],
+                    message: 'Invalid explanation style.'
+                },
+                trim: true
+            }
+        },
+
+        createdAt: { type: Date, default: Date.now },
+        updatedAt: { type: Date, default: Date.now }
+    },
+    {
+        timestamps: true,
+        collection: 'users'
+    }
+);
+
+// --- Indexing for Performance ---
+UserSchema.index({ email: 1 });
+UserSchema.index({ username: 1 });
+UserSchema.index({ otp: 1, otpExpires: 1 });
+UserSchema.index({ resetPasswordToken: 1, resetPasswordExpires: 1 });
+
+// Hash password before saving
+UserSchema.pre('save', async function(next) {
+    if (this.isNew) {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+    } else if (this.isModified('password')) {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+    }
+    next();
+});
+
+// Method to compare password
+UserSchema.methods.matchPassword = async function(enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
+};
+
+module.exports = mongoose.model('User', UserSchema);
+
+
+const mongoose = require('mongoose');
+
+const ChatSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    title: {
+        type: String,
+        default: 'New Conversation'
+    },
+    history: {
+        type: Array,
+        required: true
+    }
+}, { timestamps: true });
+
+module.exports = mongoose.model('Chat', ChatSchema);
