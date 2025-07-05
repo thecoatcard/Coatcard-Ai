@@ -1,253 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>Edit Profile - Coatcard AI</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            /* Gradient Background for the Body */
-            background: linear-gradient(135deg, #A8B8FF 0%, #88D3CE 100%); /* Blue-green gradient */
-            background-size: 400% 400%; /* Larger background for animation */
-            animation: gradientAnimation 15s ease infinite; /* Smooth, continuous gradient animation */
-        }
-
-        /* Keyframe animation for the background gradient */
-        @keyframes gradientAnimation {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Glassmorphism Effect for the main content container */
-        .glass-container {
-            background: rgba(255, 255, 255, 0.15); /* Slightly transparent white background */
-            backdrop-filter: blur(10px); /* The key to the glass effect */
-            -webkit-backdrop-filter: blur(10px); /* For Safari support */
-            border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle light border */
-            border-radius: 20px; /* Rounded corners for the card */
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); /* Soft shadow for depth */
-            animation: fadeInRise 0.8s ease-out forwards; /* Fade in and subtly rise on load */
-        }
-
-        /* Animation for the main content container */
-        @keyframes fadeInRise {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Input/Select field styling for consistency with the new theme */
-        input[type="text"],
-        input[type="email"],
-        select {
-            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
-            border: 1px solid rgba(255, 255, 255, 0.4); /* Lighter border */
-            color: #333; /* Dark text for readability */
-            box-shadow: none; /* Remove default shadow from Tailwind forms */
-        }
-
-        input[type="text"]:focus,
-        input[type="email"]:focus,
-        select:focus {
-            border-color: #6A82FB; /* Highlight focus with a themed color */
-            outline: none; /* Remove default outline */
-            box-shadow: 0 0 0 3px rgba(106, 130, 251, 0.3); /* Subtle glow on focus */
-        }
-
-        /* Special styling for disabled email input */
-        input[type="email"][disabled] {
-            background-color: rgba(255, 255, 255, 0.6); /* Slightly more opaque for disabled */
-            border-color: rgba(255, 255, 255, 0.3);
-            color: #666;
-            cursor: not-allowed;
-        }
-
-        /* Custom file input label */
-        .file-input-label {
-            display: block;
-            padding: 0.75rem 1.25rem;
-            border-radius: 0.5rem;
-            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
-            color: #333; /* Dark text */
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.2s;
-            border: 1px solid rgba(255, 255, 255, 0.4); /* Consistent border */
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .file-input-label:hover {
-            background-color: rgba(255, 255, 255, 0.9);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Custom button style */
-        .btn-primary-gradient {
-            background: linear-gradient(45deg, #6A82FB, #FC5C7D); /* Blue to Pink gradient */
-            color: white;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-primary-gradient:hover {
-            transform: translateY(-2px); /* Slight lift on hover */
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-primary-gradient:disabled {
-            background: linear-gradient(45deg, #a8b8ff70, #88d3ce70); /* Faded gradient when disabled */
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
-        }
-
-        /* Link colors for better contrast */
-        .link-text {
-            color: #E0F2F7; /* Light blue */
-            transition: color 0.3s ease;
-        }
-        .link-text:hover {
-            color: #B2EBF2; /* Lighter blue on hover */
-        }
-
-        /* Header text color */
-        .header-text-color {
-            color: #FFF; /* White color for main titles */
-        }
-
-        /* Section titles within the form */
-        .section-title {
-            color: #FFF; /* White color */
-        }
-
-        /* Field labels */
-        .label-text-color {
-            color: #E0F2F7; /* Light blue for labels */
-        }
-
-        /* Smaller text for max size info */
-        .info-text-color {
-            color: #B2EBF2; /* Lighter blue */
-        }
-
-        /* Form background within glass container */
-        .form-section-bg {
-            background: rgba(255, 255, 255, 0.08); /* Even more transparent background */
-            border: 1px solid rgba(255, 255, 255, 0.15); /* Subtle inner border */
-            border-radius: 12px; /* Consistent rounded corners */
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05); /* Very subtle inner shadow */
-        }
-
-        /* Message area styling adjustments */
-        .message-success {
-            background-color: rgba(165, 215, 167, 0.2); /* Lighter green transparent */
-            border-color: rgba(76, 175, 80, 0.4);
-            color: #4CAF50;
-        }
-
-        .message-error {
-            background-color: rgba(255, 199, 199, 0.2); /* Lighter red transparent */
-            border-color: rgba(244, 67, 54, 0.4);
-            color: #F44336;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Edit Profile - Coatcard AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .file-input-label {
+      display: block;
+      padding: 0.75rem 1.25rem;
+      border-radius: 0.5rem;
+      background-color: #f3f4f6;
+      color: #4b5563;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .file-input-label:hover { background-color: #e5e7eb; }
+  </style>
 </head>
-<body class="flex justify-center py-12 px-4">
-    <div class="w-full max-w-2xl p-8 space-y-8 glass-container"> <div class="flex items-center space-x-4">
-            <a href="/chat" class="link-text text-xl">&larr; Back to Chat</a>
-            <h2 class="text-3xl font-bold header-text-color">Edit Your Profile</h2>
-        </div>
-
-        <% if (locals.msg) { %>
-            <div class="px-4 py-3 rounded relative text-center <%= msgType === 'success' ? 'message-success' : 'message-error' %>" role="alert">
-                <span class="block sm:inline"><%= msg %></span>
-            </div>
-        <% } %>
-
-        <form class="space-y-8 mt-4" action="/profile" method="POST" enctype="multipart/form-data">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 form-section-bg"> <div>
-                    <label for="username" class="block text-sm font-medium label-text-color">Username</label>
-                    <input id="username" name="username" type="text" required
-                        class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-opacity-50 sm:text-sm"
-                        value="<%= user.username %>">
-                </div>
-
-                <div>
-                    <label for="email" class="block text-sm font-medium label-text-color">Email (cannot be changed)</label>
-                    <input id="email" name="email" type="email" disabled
-                        class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm sm:text-sm"
-                        value="<%= user.email %>">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium label-text-color">Current Profile Picture</label>
-                    <img 
-                        src="<%= user.profileImage && user.profileImage.data ? `data:${user.profileImage.contentType};base64,${user.profileImage.data}` : '/images/default-avatar.png' %>" 
-                        alt="Profile Picture"
-                        class="mt-2 h-20 w-20 rounded-full object-cover border-2 border-white shadow-md"> </div>
-
-                <div>
-                    <label for="profileImage" class="block text-sm font-medium label-text-color">Upload New Picture (Optional)</label>
-                    <label for="profileImage" class="file-input-label text-center mt-2">
-                        <span id="file-name">Choose a file</span>
-                        <input id="profileImage" name="profileImage" type="file" class="sr-only" accept="image/*">
-                    </label>
-                    <p class="text-xs mt-1 info-text-color">Max size: 5MB</p>
-                </div>
-            </div>
-
-            <div class="space-y-4 p-4 form-section-bg"> <h3 class="text-lg font-medium section-title border-b pb-2 border-gray-400">AI Preferences</h3> <div>
-                    <label for="language" class="block text-sm font-medium label-text-color">Preferred Coding Language</label>
-                    <select id="language" name="language"
-                        class="mt-1 block w-full pl-3 pr-10 py-2 border focus:outline-none focus:ring-opacity-50 sm:text-sm rounded-md">
-                        <option <%= user.preferences.language === 'C++' ? 'selected' : '' %>>C++</option>
-                        <option <%= user.preferences.language === 'Java' ? 'selected' : '' %>>Java</option>
-                        <option <%= user.preferences.language === 'Python' ? 'selected' : '' %>>Python</option>
-                        <option <%= user.preferences.language === 'JavaScript' ? 'selected' : '' %>>JavaScript</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label for="explanationStyle" class="block text-sm font-medium label-text-color">Explanation Style</label>
-                    <select id="explanationStyle" name="explanationStyle"
-                        class="mt-1 block w-full pl-3 pr-10 py-2 border focus:outline-none focus:ring-opacity-50 sm:text-sm rounded-md">
-                        <option value="bullet" <%= user.preferences.explanationStyle === 'bullet' ? 'selected' : '' %>>Bullet Points</option>
-                        <option value="paragraph" <%= user.preferences.explanationStyle === 'paragraph' ? 'selected' : '' %>>Paragraphs</option>
-                    </select>
-                </div>
-            </div>
-
-            <div>
-                <button type="submit" id="saveBtn"
-                    class="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md btn-primary-gradient">
-                    Save Changes
-                </button>
-            </div>
-        </form>
+<body class="bg-yellow-50 flex justify-center py-12 px-4">
+  <div class="w-full max-w-2xl p-8 space-y-8 bg-white rounded-2xl shadow-lg">
+    <!-- Header -->
+    <div class="flex items-center space-x-4">
+      <a href="/chat" class="text-yellow-600 hover:text-yellow-800">&larr; Back to Chat</a>
+      <h2 class="text-3xl font-bold text-yellow-900">Edit Your Profile</h2>
     </div>
 
-    <script>
-        document.getElementById('profileImage').addEventListener('change', function () {
-            const fileName = this.files[0] ? this.files[0].name : "Choose a file";
-            document.getElementById('file-name').textContent = fileName;
-        });
+    <!-- Flash Message -->
+    <% if (locals.msg) { %>
+      <div class="bg-<%= msgType === 'success' ? 'green' : 'red' %>-100 border border-<%= msgType === 'success' ? 'green' : 'red' %>-400 text-<%= msgType === 'success' ? 'green' : 'red' %>-700 px-4 py-3 rounded relative text-center" role="alert">
+        <span class="block sm:inline"><%= msg %></span>
+      </div>
+    <% } %>
 
-        document.querySelector('form').addEventListener('submit', function () {
-            const btn = document.getElementById('saveBtn');
-            btn.disabled = true;
-            btn.innerText = 'Saving...';
-            // Optionally, add a loading spinner or icon
-            // btn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Saving...';
-        });
-    </script>
+    <!-- Profile Form -->
+    <form class="space-y-8 mt-4" action="/profile" method="POST" enctype="multipart/form-data">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 border border-gray-200 p-4 rounded-lg">
+        <!-- Username -->
+        <div>
+          <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+          <input id="username" name="username" type="text" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm"
+            value="<%= user.username %>">
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700">Email (cannot be changed)</label>
+          <input id="email" name="email" type="email" disabled
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 sm:text-sm"
+            value="<%= user.email %>">
+        </div>
+
+        <!-- Profile Image -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Current Profile Picture</label>
+          <img 
+            src="<%= user.profileImage && user.profileImage.data ? `data:${user.profileImage.contentType};base64,${user.profileImage.data}` : '/images/default-avatar.png' %>" 
+            alt="Profile Picture"
+            class="mt-2 h-20 w-20 rounded-full object-cover border">
+        </div>
+
+        <!-- Upload New Image -->
+        <div>
+          <label for="profileImage" class="block text-sm font-medium text-gray-700">Upload New Picture (Optional)</label>
+          <label for="profileImage" class="file-input-label text-center mt-2">
+            <span id="file-name">Choose a file</span>
+            <input id="profileImage" name="profileImage" type="file" class="sr-only" accept="image/*">
+          </label>
+          <p class="text-xs text-gray-500 mt-1">Max size: 5MB</p>
+        </div>
+      </div>
+
+      <!-- AI Preferences -->
+      <div class="space-y-4">
+        <h3 class="text-lg font-medium text-gray-900 border-b pb-2">AI Preferences</h3>
+        <!-- Language -->
+        <div>
+          <label for="language" class="block text-sm font-medium text-gray-700">Preferred Coding Language</label>
+          <select id="language" name="language"
+            class="mt-1 block w-full pl-3 pr-10 py-2 border-gray-300 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm rounded-md">
+            <option <%= user.preferences.language === 'C++' ? 'selected' : '' %>>C++</option>
+            <option <%= user.preferences.language === 'Java' ? 'selected' : '' %>>Java</option>
+            <option <%= user.preferences.language === 'Python' ? 'selected' : '' %>>Python</option>
+            <option <%= user.preferences.language === 'JavaScript' ? 'selected' : '' %>>JavaScript</option>
+          </select>
+        </div>
+
+        <!-- Explanation Style -->
+        <div>
+          <label for="explanationStyle" class="block text-sm font-medium text-gray-700">Explanation Style</label>
+          <select id="explanationStyle" name="explanationStyle"
+            class="mt-1 block w-full pl-3 pr-10 py-2 border-gray-300 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm rounded-md">
+            <option value="bullet" <%= user.preferences.explanationStyle === 'bullet' ? 'selected' : '' %>>Bullet Points</option>
+            <option value="paragraph" <%= user.preferences.explanationStyle === 'paragraph' ? 'selected' : '' %>>Paragraphs</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div>
+        <button type="submit" id="saveBtn"
+          class="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-stone-800 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('profileImage').addEventListener('change', function () {
+      const fileName = this.files[0] ? this.files[0].name : "Choose a file";
+      document.getElementById('file-name').textContent = fileName;
+    });
+
+    document.querySelector('form').addEventListener('submit', function () {
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true;
+      btn.innerText = 'Saving...';
+    });
+  </script>
 </body>
 </html>

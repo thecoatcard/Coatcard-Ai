@@ -5,173 +5,85 @@
     <title>Login - Coatcard AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            /* Gradient Background for the Body */
-            background: linear-gradient(135deg, #A8B8FF 0%, #88D3CE 100%); /* Blue-green gradient */
-            background-size: 400% 400%; /* Larger background for animation */
-            animation: gradientAnimation 15s ease infinite; /* Smooth, continuous gradient animation */
-        }
-
-        /* Keyframe animation for the background gradient */
-        @keyframes gradientAnimation {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Glassmorphism Effect for the form container */
-        .glass-form-container {
-            background: rgba(255, 255, 255, 0.15); /* Slightly transparent white background */
-            backdrop-filter: blur(10px); /* The key to the glass effect */
-            -webkit-backdrop-filter: blur(10px); /* For Safari support */
-            border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle light border */
-            border-radius: 20px; /* More rounded corners for the form card */
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); /* Soft shadow for depth */
-            animation: fadeInSlideUp 0.8s ease-out forwards; /* Fade in and slide up on load */
-        }
-
-        /* Animation for the form container */
-        @keyframes fadeInSlideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Input field styling for consistency with the new theme */
-        input[type="email"],
-        input[type="password"] {
-            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
-            border: 1px solid rgba(255, 255, 255, 0.4); /* Lighter border */
-            color: #333; /* Dark text for readability */
-        }
-
-        input[type="email"]:focus,
-        input[type="password"]:focus {
-            border-color: #6A82FB; /* Highlight focus with a themed color */
-            outline: none; /* Remove default outline */
-            box-shadow: 0 0 0 3px rgba(106, 130, 251, 0.3); /* Subtle glow on focus */
-        }
-
-        /* Custom button styles */
-        .btn-primary-gradient {
-            background: linear-gradient(45deg, #6A82FB, #FC5C7D); /* Blue to Pink gradient */
-            color: white;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary-gradient:hover {
-            transform: translateY(-2px); /* Slight lift on hover */
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-secondary-transparent {
-            background: rgba(255, 255, 255, 0.2); /* Light transparent background */
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white; /* White text */
-            transition: all 0.3s ease;
-        }
-
-        .btn-secondary-transparent:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Link colors for better contrast */
-        .link-text {
-            color: #E0F2F7; /* Light blue */
-            transition: color 0.3s ease;
-        }
-        .link-text:hover {
-            color: #B2EBF2; /* Lighter blue on hover */
-        }
-
-        /* Message area styling adjustments */
-        .message-success {
-            background-color: rgba(165, 215, 167, 0.2); /* Lighter green transparent */
-            border-color: rgba(76, 175, 80, 0.4);
-            color: #4CAF50;
-        }
-
-        .message-error {
-            background-color: rgba(255, 199, 199, 0.2); /* Lighter red transparent */
-            border-color: rgba(244, 67, 54, 0.4);
-            color: #F44336;
-        }
-
-    </style>
+    <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="flex items-center justify-center h-screen">
-    <div class="w-full max-w-md p-8 space-y-6 glass-form-container"> <div id="password-login-view">
-            <h2 class="text-3xl font-bold text-center text-white">Sign in with Password</h2> <div id="message-area" class="text-center mt-4">
-                <% if (locals.msg) { %>
-                    <div class="px-4 py-3 rounded relative <%= locals.msg.includes('success') || locals.msg.includes('verified') ? 'message-success' : 'message-error' %>" role="alert">
+<body class="bg-yellow-50 flex items-center justify-center h-screen">
+    <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-lg">
+        
+        <div id="password-login-view">
+            <h2 class="text-3xl font-bold text-center text-yellow-900">Sign in with Password</h2>
+            
+            <!-- Message Area -->
+            <div id="message-area" class="text-center mt-4">
+                 <% if (locals.msg) { %>
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
                         <span class="block sm:inline"><%= msg %></span>
                         
+                        <!-- THIS IS THE CRITICAL FIX: Conditionally show Verify link -->
                         <% if (locals.showVerifyLink) { %>
-                            <a href="/verify?email=<%= encodeURIComponent(locals.email || '') %>" class="block font-bold link-text mt-2">Click here to verify your account</a>
+                            <a href="/verify?email=<%= encodeURIComponent(locals.email || '') %>" class="block font-bold text-blue-600 hover:text-blue-800 mt-2">Click here to verify your account</a>
                         <% } %>
                     </div>
                 <% } %>
             </div>
 
             <form class="mt-6 space-y-6" action="/auth/login" method="POST">
+                <!-- Password login fields -->
                 <div class="rounded-md shadow-sm -space-y-px">
                     <div>
-                        <input id="email-address" name="email" type="email" required class="appearance-none rounded-none relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-opacity-50" placeholder="Email address" value="<%= locals.email || '' %>">
+                        <input id="email-address" name="email" type="email" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-yellow-500 focus:border-yellow-500" placeholder="Email address" value="<%= locals.email || '' %>">
                     </div>
                     <div>
-                        <input id="password" name="password" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-opacity-50" placeholder="Password">
+                        <input id="password" name="password" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-yellow-500 focus:border-yellow-500" placeholder="Password">
                     </div>
                 </div>
                 <div class="flex items-center justify-between text-sm">
-                    <a href="/forgot" class="font-medium link-text">Forgot password?</a>
+                    <a href="/forgot" class="font-medium text-yellow-600 hover:text-yellow-500">Forgot password?</a>
                 </div>
                 <div>
-                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md btn-primary-gradient">
+                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-stone-800 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
                         Sign in
                     </button>
                 </div>
             </form>
             <div class="relative flex py-5 items-center">
                 <div class="flex-grow border-t border-gray-300"></div>
-                <span class="flex-shrink mx-4 text-gray-200">Or</span> <div class="flex-grow border-t border-gray-300"></div>
+                <span class="flex-shrink mx-4 text-gray-400">Or</span>
+                <div class="flex-grow border-t border-gray-300"></div>
             </div>
-            <button id="show-otp-btn" class="w-full flex justify-center py-2 px-4 border text-sm font-medium rounded-md btn-secondary-transparent">
+            <button id="show-otp-btn" class="w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
                 Sign in with OTP
             </button>
         </div>
 
         <div id="otp-login-view" class="hidden">
-            <h2 class="text-3xl font-bold text-center text-white">Sign in with OTP</h2> <p class="text-center text-sm text-gray-200 mt-2">Enter your email to receive a login code.</p> <form class="mt-8 space-y-6" action="/auth/request-otp-login" method="POST">
+            <h2 class="text-3xl font-bold text-center text-yellow-900">Sign in with OTP</h2>
+            <p class="text-center text-sm text-gray-600 mt-2">Enter your email to receive a login code.</p>
+            <form class="mt-8 space-y-6" action="/auth/request-otp-login" method="POST">
+                <!-- OTP login fields -->
                 <div class="rounded-md shadow-sm">
-                    <input id="otp-email" name="email" type="email" required class="appearance-none rounded-md relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-opacity-50" placeholder="Email address">
+                    <input id="otp-email" name="email" type="email" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500" placeholder="Email address">
                 </div>
                 <div>
-                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md btn-primary-gradient">
+                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-stone-800 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
                         Send Login Code
                     </button>
                 </div>
             </form>
-            <div class="relative flex py-5 items-center">
+             <div class="relative flex py-5 items-center">
                 <div class="flex-grow border-t border-gray-300"></div>
-                <span class="flex-shrink mx-4 text-gray-200">Or</span>
+                <span class="flex-shrink mx-4 text-gray-400">Or</span>
                 <div class="flex-grow border-t border-gray-300"></div>
             </div>
-            <button id="show-password-btn" class="w-full flex justify-center py-2 px-4 border text-sm font-medium rounded-md btn-secondary-transparent">
+            <button id="show-password-btn" class="w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
                 Sign in with Password
             </button>
         </div>
         
-        <p class="text-center text-sm mt-6 text-gray-200"> Don't have an account? <a href="/register" class="font-medium link-text">Register here</a>
+        <p class="text-center text-sm mt-6">
+            Don't have an account? <a href="/register" class="font-medium text-yellow-600 hover:text-yellow-500">Register here</a>
         </p>
     </div>
     <script>
@@ -194,9 +106,9 @@
             const urlParams = new URLSearchParams(window.location.search);
             const messageArea = document.getElementById('message-area');
             if (urlParams.get('status') === 'password_reset_success') {
-                messageArea.innerHTML = `<div class="px-4 py-3 rounded relative message-success" role="alert">Password has been reset successfully. Please log in.</div>`;
+                messageArea.innerHTML = `<div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">Password has been reset successfully. Please log in.</div>`;
             } else if (urlParams.get('status') === 'verified') {
-                messageArea.innerHTML = `<div class="px-4 py-3 rounded relative message-success" role="alert">Your account has been verified. Please log in.</div>`;
+                 messageArea.innerHTML = `<div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">Your account has been verified. Please log in.</div>`;
             }
         });
     </script>
