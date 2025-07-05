@@ -340,12 +340,8 @@ On user request:
         const wrapper = document.createElement('div');
         wrapper.classList.add('message-fade-in');
         if (sender === 'user') {
-            const cleanedText = message
-                .trim()
-                .replace(/^\s+|\s+$/g, '');        
-            const formatted = marked.parse(cleanedText).replace(/<p>/g, '<p class="m-0 p-0">');
-
-
+            const cleanedText = message.trim().replace(/^\s+|\s+$/g, '');
+            const formatted = marked.parse(cleanedText);
             wrapper.className = 'flex items-start gap-4 message-fade-in';
             wrapper.innerHTML = `
         <div class="flex-shrink-0 h-9 w-9 rounded-full bg-gray-600 flex items-center justify-center">
