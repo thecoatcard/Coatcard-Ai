@@ -29,7 +29,19 @@ router.get('/', ensureAuthenticated, async (req, res) => {
             return res.redirect('/login');
         }
 
-        res.render('profile', { user, msg: null, msgType: null });
+        // Ensure profileImage is passed as base64 to match chat.ejs expectations
+        const profileUser = {
+            ...user.toObject(),
+            profileImage: user.profileImage?.data
+                ? {
+                    data: user.profileImage.data.toString('base64'),
+                    contentType: user.profileImage.contentType
+                }
+                : null
+        };
+
+        res.render('profile', { user: profileUser, msg: null, msgType: null });
+
     } catch (err) {
         console.error('Error loading profile:', err);
         res.redirect('/chat');
@@ -68,7 +80,6 @@ router.post('/', ensureAuthenticated, (req, res) => {
             user.preferences.language = language;
             user.preferences.explanationStyle = explanationStyle;
 
-            // Update profile image only if file was uploaded
             if (req.file) {
                 user.profileImage = {
                     data: req.file.buffer,
@@ -78,11 +89,10 @@ router.post('/', ensureAuthenticated, (req, res) => {
 
             await user.save();
 
-            // Update session safely
+            // Update session
             req.session.user.username = user.username;
             req.session.user.preferences = user.preferences;
 
-            // ✅ Safe profile image check
             const hasImage = user.profileImage?.data;
             req.session.user.profileImage = hasImage
                 ? {
@@ -91,13 +101,13 @@ router.post('/', ensureAuthenticated, (req, res) => {
                 }
                 : null;
 
-            // Optional: explicitly save session if using async store
-            // req.session.save(() => {
-            //     res.render('profile', { user, msg: 'Profile updated successfully!', msgType: 'success' });
-            // });
+            const profileUser = {
+                ...user.toObject(),
+                profileImage: req.session.user.profileImage
+            };
 
             res.render('profile', {
-                user,
+                user: profileUser,
                 msg: 'Profile updated successfully!',
                 msgType: 'success'
             });
@@ -105,10 +115,20 @@ router.post('/', ensureAuthenticated, (req, res) => {
         } catch (dbErr) {
             console.error('Profile update DB error:', dbErr);
 
+            const profileUser = {
+                ...user.toObject(),
+                profileImage: user.profileImage?.data
+                    ? {
+                        data: user.profileImage.data.toString('base64'),
+                        contentType: user.profileImage.contentType
+                    }
+                    : null
+            };
+
             if (dbErr.name === 'ValidationError') {
                 const messages = Object.values(dbErr.errors).map(val => val.message);
                 return res.render('profile', {
-                    user,
+                    user: profileUser,
                     msg: `Validation Error: ${messages.join(', ')}`,
                     msgType: 'error'
                 });
@@ -116,14 +136,14 @@ router.post('/', ensureAuthenticated, (req, res) => {
 
             if (dbErr.code === 11000) {
                 return res.render('profile', {
-                    user,
+                    user: profileUser,
                     msg: 'Username or Email already exists.',
                     msgType: 'error'
                 });
             }
 
             res.render('profile', {
-                user,
+                user: profileUser,
                 msg: 'Something went wrong while updating your profile.',
                 msgType: 'error'
             });
