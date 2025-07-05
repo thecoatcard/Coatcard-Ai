@@ -1,91 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Welcome to Coatcard AI</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #fff9c4, #fef3c7);
-      backdrop-filter: blur(10px);
-    }
-    .glass {
-      background: rgba(255, 255, 255, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Welcome to Coatcard AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
 </head>
-<body class="flex items-center justify-center min-h-screen bg-yellow-50 relative overflow-hidden">
-
-  <!-- Background circles for visual richness -->
-  <div class="absolute -top-10 -left-10 w-72 h-72 bg-yellow-100 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-pulse"></div>
-  <div class="absolute top-40 right-10 w-96 h-96 bg-yellow-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-pulse"></div>
-
-  <!-- Main container -->
-  <div class="glass p-10 rounded-2xl shadow-2xl max-w-2xl w-full text-center animate-fade-in-down">
-    <h1 class="text-5xl font-extrabold text-yellow-900 mb-4">Welcome to Coatcard AI</h1>
-    <p class="text-lg text-yellow-800 mb-6 leading-relaxed">
-      🚀 Your personal AI-powered assistant, built to help you code better, faster, and smarter.<br />
-      Coatcard AI understands your coding goals and adapts to your preferred language & style.<br />
-      Whether you’re solving DSA problems, building projects, or learning new concepts — Coatcard AI is your silent co-pilot. ✨
-    </p>
-
-    <!-- AI Highlights -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 text-left text-gray-700">
-      <div class="bg-yellow-100 rounded-xl p-4 shadow-md hover:shadow-lg transition">
-        <h3 class="font-semibold text-yellow-900 text-lg mb-1">👨‍💻 Smart Coding Help</h3>
-        <p class="text-sm">From brute-force to optimized solutions, Coatcard AI guides you step-by-step.</p>
-      </div>
-      <div class="bg-yellow-100 rounded-xl p-4 shadow-md hover:shadow-lg transition">
-        <h3 class="font-semibold text-yellow-900 text-lg mb-1">🧠 Language Aware</h3>
-        <p class="text-sm">Understands your preferred coding language: C++, Java, Python, and more.</p>
-      </div>
-      <div class="bg-yellow-100 rounded-xl p-4 shadow-md hover:shadow-lg transition">
-        <h3 class="font-semibold text-yellow-900 text-lg mb-1">📚 Explanation Styles</h3>
-        <p class="text-sm">Choose between bullet points, paragraphs, or step-by-step logic breakdowns.</p>
-      </div>
-      <div class="bg-yellow-100 rounded-xl p-4 shadow-md hover:shadow-lg transition">
-        <h3 class="font-semibold text-yellow-900 text-lg mb-1">⚡ Real-time Feedback</h3>
-        <p class="text-sm">Ask, learn, improve — Coatcard AI responds instantly to your queries.</p>
-      </div>
+<body class="bg-yellow-50 flex items-center justify-center h-screen">
+    <div class="text-center p-8">
+        <div class="mb-8">
+            <h1 class="text-6xl font-bold text-yellow-900">Coatcard AI</h1>
+            <p class="text-xl text-amber-700 mt-2">Your Personal Coding Assistant</p>
+        </div>
+        <div class="space-x-4">
+            <a href="/login" class="px-8 py-3 bg-yellow-400 text-stone-800 font-semibold rounded-lg shadow-md hover:bg-yellow-500 transition-transform transform hover:scale-105">
+                Login
+            </a>
+            <a href="/register" class="px-8 py-3 bg-white text-yellow-800 font-semibold rounded-lg shadow-md hover:bg-gray-100 transition-transform transform hover:scale-105">
+                Register
+            </a>
+        </div>
     </div>
-
-    <!-- CTA Buttons -->
-    <div class="space-x-4">
-      <a href="/login"
-        class="px-8 py-3 bg-yellow-400 text-stone-800 font-semibold rounded-lg shadow-md hover:bg-yellow-500 transition transform hover:scale-105">
-        Login
-      </a>
-      <a href="/register"
-        class="px-8 py-3 bg-white text-yellow-800 font-semibold rounded-lg shadow-md hover:bg-gray-100 transition transform hover:scale-105">
-        Register
-      </a>
-    </div>
-  </div>
-
-  <!-- Tailwind animation -->
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          animation: {
-            'fade-in-down': 'fadeInDown 1s ease-out',
-          },
-          keyframes: {
-            fadeInDown: {
-              '0%': { opacity: 0, transform: 'translateY(-20px)' },
-              '100%': { opacity: 1, transform: 'translateY(0)' },
-            }
-          }
-        }
-      }
-    }
-  </script>
 </body>
 </html>
