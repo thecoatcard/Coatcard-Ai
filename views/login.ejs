@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Coatcard AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-yellow-50 flex items-center justify-center h-screen">
+    <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-lg">
+        
+        <div id="password-login-view">
+            <h2 class="text-3xl font-bold text-center text-yellow-900">Sign in with Password</h2>
+            
+            <!-- Message Area -->
+            <div id="message-area" class="text-center mt-4">
+                 <% if (locals.msg) { %>
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <span class="block sm:inline"><%= msg %></span>
+                        
+                        <!-- THIS IS THE CRITICAL FIX: Conditionally show Verify link -->
+                        <% if (locals.showVerifyLink) { %>
+                            <a href="/verify?email=<%= encodeURIComponent(locals.email || '') %>" class="block font-bold text-blue-600 hover:text-blue-800 mt-2">Click here to verify your account</a>
+                        <% } %>
+                    </div>
+                <% } %>
+            </div>
+
+            <form class="mt-6 space-y-6" action="/auth/login" method="POST">
+                <!-- Password login fields -->
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <input id="email-address" name="email" type="email" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-yellow-500 focus:border-yellow-500" placeholder="Email address" value="<%= locals.email || '' %>">
+                    </div>
+                    <div>
+                        <input id="password" name="password" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-yellow-500 focus:border-yellow-500" placeholder="Password">
+                    </div>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <a href="/forgot" class="font-medium text-yellow-600 hover:text-yellow-500">Forgot password?</a>
+                </div>
+                <div>
+                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-stone-800 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                        Sign in
+                    </button>
+                </div>
+            </form>
+            <div class="relative flex py-5 items-center">
+                <div class="flex-grow border-t border-gray-300"></div>
+                <span class="flex-shrink mx-4 text-gray-400">Or</span>
+                <div class="flex-grow border-t border-gray-300"></div>
+            </div>
+            <button id="show-otp-btn" class="w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                Sign in with OTP
+            </button>
+        </div>
+
+        <div id="otp-login-view" class="hidden">
+            <h2 class="text-3xl font-bold text-center text-yellow-900">Sign in with OTP</h2>
+            <p class="text-center text-sm text-gray-600 mt-2">Enter your email to receive a login code.</p>
+            <form class="mt-8 space-y-6" action="/auth/request-otp-login" method="POST">
+                <!-- OTP login fields -->
+                <div class="rounded-md shadow-sm">
+                    <input id="otp-email" name="email" type="email" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500" placeholder="Email address">
+                </div>
+                <div>
+                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-stone-800 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                        Send Login Code
+                    </button>
+                </div>
+            </form>
+             <div class="relative flex py-5 items-center">
+                <div class="flex-grow border-t border-gray-300"></div>
+                <span class="flex-shrink mx-4 text-gray-400">Or</span>
+                <div class="flex-grow border-t border-gray-300"></div>
+            </div>
+            <button id="show-password-btn" class="w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                Sign in with Password
+            </button>
+        </div>
+        
+        <p class="text-center text-sm mt-6">
+            Don't have an account? <a href="/register" class="font-medium text-yellow-600 hover:text-yellow-500">Register here</a>
+        </p>
+    </div>
+    <script>
+        const passwordView = document.getElementById('password-login-view');
+        const otpView = document.getElementById('otp-login-view');
+        const showOtpBtn = document.getElementById('show-otp-btn');
+        const showPasswordBtn = document.getElementById('show-password-btn');
+
+        showOtpBtn.addEventListener('click', () => {
+            passwordView.classList.add('hidden');
+            otpView.classList.remove('hidden');
+        });
+
+        showPasswordBtn.addEventListener('click', () => {
+            otpView.classList.add('hidden');
+            passwordView.classList.remove('hidden');
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const messageArea = document.getElementById('message-area');
+            if (urlParams.get('status') === 'password_reset_success') {
+                messageArea.innerHTML = `<div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">Password has been reset successfully. Please log in.</div>`;
+            } else if (urlParams.get('status') === 'verified') {
+                 messageArea.innerHTML = `<div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">Your account has been verified. Please log in.</div>`;
+            }
+        });
+    </script>
+</body>
+</html>

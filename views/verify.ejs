@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify Your Email - Coatcard AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-yellow-50 flex items-center justify-center h-screen">
+    <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-lg">
+        <h2 class="text-3xl font-bold text-center text-yellow-900">Check Your Email</h2>
+        <p class="text-center text-sm text-gray-600">We've sent a 6-digit verification code to <strong id="user-email"><%= email %></strong>. The code is valid for 10 minutes.</p>
+        
+        <div id="message-area" class="text-center">
+            <% if (locals.msg) { %>
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline"><%= msg %></span>
+                </div>
+            <% } %>
+        </div>
+
+        <form class="mt-4 space-y-6" action="/auth/verify" method="POST">
+            <input type="hidden" name="email" value="<%= email %>">
+            <div class="rounded-md shadow-sm">
+                <div>
+                    <label for="otp" class="sr-only">Verification Code</label>
+                    <input id="otp" name="otp" type="text" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 focus:z-10 sm:text-sm" placeholder="6-Digit Code">
+                </div>
+            </div>
+            <div>
+                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-stone-800 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                    Verify Account
+                </button>
+            </div>
+        </form>
+
+        <div class="text-center text-sm">
+            <p>Didn't receive the code? 
+                <button id="resend-btn" class="font-medium text-yellow-600 hover:text-yellow-500 disabled:text-gray-400 disabled:cursor-not-allowed">
+                    Resend OTP
+                </button>
+                <span id="timer" class="hidden text-gray-500"></span>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const resendBtn = document.getElementById('resend-btn');
+        const timerSpan = document.getElementById('timer');
+        const messageArea = document.getElementById('message-area');
+        const userEmail = document.getElementById('user-email').textContent;
+        let countdown;
+
+        function startTimer() {
+            let seconds = 60;
+            resendBtn.disabled = true;
+            timerSpan.classList.remove('hidden');
+
+            countdown = setInterval(() => {
+                timerSpan.textContent = `(Resend available in ${seconds}s)`;
+                seconds--;
+                if (seconds < 0) {
+                    clearInterval(countdown);
+                    resendBtn.disabled = false;
+                    timerSpan.classList.add('hidden');
+                }
+            }, 1000);
+        }
+
+        resendBtn.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/auth/resend-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail })
+                });
+                
+                const data = await response.json();
+                
+                let alertColor = response.ok ? 'blue' : 'red';
+                messageArea.innerHTML = `
+                    <div class="bg-${alertColor}-100 border border-${alertColor}-400 text-${alertColor}-700 px-4 py-3 rounded relative" role="alert">
+                        <span class="block sm:inline">${data.message}</span>
+                    </div>`;
+
+                if (response.ok) {
+                    startTimer();
+                }
+
+            } catch (error) {
+                messageArea.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <span class="block sm:inline">An error occurred. Please check your connection.</span>
+                    </div>`;
+            }
+        });
+
+        // Start the timer when the page loads
+        startTimer();
+    </script>
+</body>
+</html>

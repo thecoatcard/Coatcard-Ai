@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Profile - Coatcard AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .file-input-label {
+            display: block;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            background-color: #f3f4f6;
+            color: #4b5563;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .file-input-label:hover {
+            background-color: #e5e7eb;
+        }
+    </style>
+</head>
+<body class="bg-yellow-50 flex justify-center py-12 px-4">
+    <div class="w-full max-w-2xl p-8 space-y-8 bg-white rounded-2xl shadow-lg">
+        <div class="flex items-center space-x-4">
+             <a href="/chat" class="text-yellow-600 hover:text-yellow-800">&larr; Back to Chat</a>
+             <h2 class="text-3xl font-bold text-yellow-900">Edit Your Profile</h2>
+        </div>
+
+        <% if (locals.msg) { %>
+            <div class="bg-<%= locals.msgType === 'success' ? 'green' : 'red' %>-100 border border-<%= locals.msgType === 'success' ? 'green' : 'red' %>-400 text-<%= locals.msgType === 'success' ? 'green' : 'red' %>-700 px-4 py-3 rounded relative text-center" role="alert">
+                <span class="block sm:inline"><%= msg %></span>
+            </div>
+        <% } %>
+
+        <form class="mt-8 space-y-8" action="/profile" method="POST" enctype="multipart/form-data">
+            
+            <!-- Profile Details -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                    <input id="username" name="username" type="text" required class="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm" value="<%= user.username %>">
+                </div>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email (cannot be changed)</label>
+                    <input id="email" name="email" type="email" disabled class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 sm:text-sm" value="<%= user.email %>">
+                </div>
+                 <div>
+                    <label class="block text-sm font-medium text-gray-700">Current Profile Picture</label>
+                    <img src="<%= user.profileImage %>" alt="Current Profile Picture" class="mt-2 h-20 w-20 rounded-full object-cover">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Upload New Picture (Optional)</label>
+                    <label for="profileImage" class="file-input-label text-center mt-2">
+                        <span id="file-name">Choose a file</span>
+                    </label>
+                    <input id="profileImage" name="profileImage" type="file" class="sr-only">
+                    <p class="text-xs text-gray-500 mt-1">Maximum file size: 5MB.</p>
+                </div>
+            </div>
+
+            <!-- AI Preferences -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-medium text-gray-900 border-b pb-2">AI Preferences</h3>
+                <div>
+                    <label for="language" class="block text-sm font-medium text-gray-700">Preferred Coding Language</label>
+                    <select id="language" name="language" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm rounded-md">
+                        <option <%= user.preferences.language === 'C++' ? 'selected' : '' %>>C++</option>
+                        <option <%= user.preferences.language === 'Java' ? 'selected' : '' %>>Java</option>
+                        <option <%= user.preferences.language === 'Python' ? 'selected' : '' %>>Python</option>
+                        <option <%= user.preferences.language === 'JavaScript' ? 'selected' : '' %>>JavaScript</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="explanationStyle" class="block text-sm font-medium text-gray-700">Explanation Style</label>
+                    <select id="explanationStyle" name="explanationStyle" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm rounded-md">
+                        <option value="bullet" <%= user.preferences.explanationStyle === 'bullet' ? 'selected' : '' %>>Bullet Points</option>
+                        <option value="paragraph" <%= user.preferences.explanationStyle === 'paragraph' ? 'selected' : '' %>>Paragraphs</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-stone-800 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+    <script>
+        document.getElementById('profileImage').addEventListener('change', function() {
+            var fileName = this.files[0] ? this.files[0].name : "Choose a file";
+            document.getElementById('file-name').textContent = fileName;
+        });
+    </script>
+</body>
+</html>

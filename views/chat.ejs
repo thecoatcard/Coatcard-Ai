@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Coatcard AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-white flex h-screen transition-colors duration-300">
+
+    <!-- Generic Confirmation Modal -->
+    <div id="confirmation-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+            <h3 id="modal-title" class="text-lg font-bold text-gray-900">Confirm Action</h3>
+            <p id="modal-text" class="mt-2 text-sm text-gray-600">Are you sure?</p>
+            <div class="mt-6 flex justify-end space-x-4">
+                <button id="cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                <button id="confirm-btn" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar for Chat History -->
+    <div class="w-1/4 bg-yellow-50 border-r border-yellow-200 flex flex-col h-full">
+        <div class="p-4 border-b border-yellow-200">
+            <button id="new-chat-btn" class="w-full py-2 px-4 bg-yellow-400 text-stone-800 font-semibold rounded-lg shadow-sm hover:bg-yellow-500 transition">
+                + New Conversation
+            </button>
+        </div>
+        <div id="chat-history-list" class="flex-1 overflow-y-auto p-2 space-y-1">
+            <!-- Chat history items will be loaded here by client.js -->
+        </div>
+        <div class="p-4 border-t border-yellow-200 flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="/profile" title="Edit Profile">
+                    <img src="<%= user.profileImage %>" alt="Profile" class="h-10 w-10 rounded-full mr-3 object-cover cursor-pointer hover:ring-2 hover:ring-yellow-400">
+                </a>
+                <div>
+                    <p class="font-semibold text-gray-800"><%= user.username %></p>
+                    <a href="/auth/logout" class="text-sm text-yellow-600 hover:text-yellow-500">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chat Area -->
+    <div class="w-3/4 flex flex-col h-full">
+        <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+             <h2 id="chat-title" class="text-lg font-semibold text-gray-700 truncate">Conversation</h2>
+             <button id="clear-chat-btn" class="text-sm font-medium text-red-600 hover:text-red-500 disabled:text-gray-400 disabled:cursor-not-allowed">Clear Chat</button>
+        </div>
+
+        <div id="chat-container" class="flex-1 p-6 space-y-6 overflow-y-auto">
+             <!-- Chat messages will be loaded here by client.js -->
+        </div>
+
+        <div class="p-4 border-t border-gray-200">
+            <div class="relative bg-gray-100 rounded-full border border-gray-300">
+                <input type="text" id="userInput" placeholder="Message Coatcard AI..." class="w-full bg-transparent text-gray-800 placeholder-gray-500 rounded-full py-3 pl-5 pr-14 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                <button id="sendButton" class="absolute right-2 top-1/2 -translate-y-1/2 bg-yellow-400 text-white p-2 rounded-full hover:bg-yellow-500 disabled:bg-yellow-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3.478 2.405a.75.75 0 0 0-.926.94l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.405Z"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Pass user details to the client-side script
+        const userDetails = {
+            profileImage: "<%= user.profileImage %>",
+            preferences: {
+                language: "<%= user.preferences.language %>",
+                explanationStyle: "<%= user.preferences.explanationStyle %>"
+            },
+            role: "<%= user.role %>",
+            fieldOfWork: "<%= user.fieldOfWork %>",
+            goal: "<%= user.goal %>"
+        };
+    </script>
+    <script src="/js/client.js"></script>
+</body>
+</html>
