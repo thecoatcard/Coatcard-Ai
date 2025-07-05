@@ -95,7 +95,16 @@ On user request:
     // --- Event Listeners ---
     newChatBtn.addEventListener('click', createNewChat);
     sendButton.addEventListener('click', sendMessage);
-    userInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+    userInput.addEventListener('keydown', e => {
+        const isMac = navigator.platform.toUpperCase().includes('MAC');
+        const isSendKey = isMac ? e.metaKey && e.key === 'Enter' : e.ctrlKey && e.key === 'Enter';
+
+        if (isSendKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
     chatHistoryList.addEventListener('click', handleHistoryClick);
     clearChatBtn.addEventListener('click', () => setupModal('clear'));
     cancelBtn.addEventListener('click', () => modal.classList.add('hidden'));
@@ -103,6 +112,13 @@ On user request:
     chatContainer.addEventListener('click', (e) => { if (e.target && e.target.classList.contains('optimize-btn')) handleOptimizeClick(e.target); });
 
     // --- Core Functions ---
+
+
+    userInput.addEventListener('input', () => {
+        userInput.style.height = 'auto'; // Reset to natural height
+        userInput.style.height = `${userInput.scrollHeight}px`; // Expand to fit
+    });
+
 
     async function loadChatHistoryList() {
         try {
@@ -253,12 +269,16 @@ On user request:
         displayMessage(messageText, 'user');
         userInput.value = '';
 
+        // Reset height after sending
+        userInput.style.height = 'auto';
+
         const isFirstMessage = localHistory.length === 0;
         localHistory.push({ role: "user", parts: [{ text: messageText }] });
 
         showLoadingIndicator();
         await getGeminiResponse(localHistory, isFirstMessage ? messageText : null);
     }
+
 
     async function getGeminiResponse(historyPayload, firstMessage = null) {
         try {
