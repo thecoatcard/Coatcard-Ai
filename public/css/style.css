@@ -193,3 +193,10 @@ body {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
 } */
+
+
+.prose-tight p {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding: 0 !important;
+}
