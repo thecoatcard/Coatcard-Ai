@@ -10,34 +10,70 @@ router.get('/', (req, res) => {
 });
 
 // @route   GET /login
-router.get('/login', (req, res) => res.render('login', { msg: null }));
+router.get('/login', (req, res) => {
+    res.render('login', { msg: null });
+});
 
 // @route   GET /register
-router.get('/register', (req, res) => res.render('register', { msg: null }));
+router.get('/register', (req, res) => {
+    res.render('register', { msg: null });
+});
 
 // @route   GET /chat
 router.get('/chat', ensureAuthenticated, (req, res) => {
-    res.render('chat', { user: req.session.user });
+    const user = req.session.user;
+
+    // Ensure the image format is safe for rendering
+    const profileImage = user?.profileImage?.data
+        ? {
+            data: user.profileImage.data,
+            contentType: user.profileImage.contentType
+        }
+        : null;
+
+    res.render('chat', {
+        user: {
+            ...user,
+            profileImage
+        }
+    });
 });
 
-
 // @route   GET /verify
-router.get('/verify', (req, res) => res.render('verify', { email: req.query.email, msg: null }));
+router.get('/verify', (req, res) => {
+    res.render('verify', { email: req.query.email, msg: null });
+});
 
-// NEW ROUTE for OTP Login Page
 // @route   GET /otp-login
-router.get('/otp-login', (req, res) => res.render('otp-login', { email: req.query.email, msg: null }));
+router.get('/otp-login', (req, res) => {
+    res.render('otp-login', { email: req.query.email, msg: null });
+});
 
 // @route   GET /forgot
-router.get('/forgot', (req, res) => res.render('forgot', { msg: null }));
+router.get('/forgot', (req, res) => {
+    res.render('forgot', { msg: null });
+});
 
 // @route   GET /reset/:token
 router.get('/reset/:token', async (req, res) => {
     try {
-        const user = await User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } });
-        if (!user) return res.render('forgot', { msg: 'Password reset token is invalid or has expired.' });
-        res.render('reset', { token: req.params.token, msg: null });
+        const user = await User.findOne({
+            resetPasswordToken: req.params.token,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.render('forgot', {
+                msg: 'Password reset token is invalid or has expired.'
+            });
+        }
+
+        res.render('reset', {
+            token: req.params.token,
+            msg: null
+        });
     } catch (err) {
+        console.error('Reset route error:', err);
         res.redirect('/forgot');
     }
 });
