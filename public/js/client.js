@@ -344,7 +344,8 @@ On user request:
             const formatted = marked.parse(message); // Markdown render with code blocks etc.
             wrapper.className = 'flex items-start gap-4 justify-end message-fade-in';
             wrapper.innerHTML = `
-        <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg rounded-br-none max-w-lg shadow-md border border-gray-200 dark:border-gray-700 prose dark:prose-invert whitespace-pre-wrap">
+        <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg rounded-tl-none max-w-full prose prose-tight dark:prose-invert prose-sm m-0 leading-tight border border-gray-300 dark:border-gray-700">
+
             ${formatted}
         </div>
         <div class="flex-shrink-0 h-9 w-9 rounded-full bg-gray-600 flex items-center justify-center">
