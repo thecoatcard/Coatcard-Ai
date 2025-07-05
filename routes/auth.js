@@ -126,8 +126,14 @@ router.post('/register', (req, res) => {
                 to: email,
                 from: `Coatcard AI <${process.env.EMAIL_USER}>`,
                 subject: 'Verify Your Email Address',
-                text: `Your OTP is: ${otp}`
+                html: createStyledEmail(
+                    'Verify Your Email Address',
+                    'Complete your registration with Coatcard AI',
+                    `<p>Use the following OTP to verify your email address:</p><div class="otp">${otp}</div>`,
+                    null
+                )
             });
+
 
             res.redirect(`/verify?email=${email}`);
         } catch (e) {
