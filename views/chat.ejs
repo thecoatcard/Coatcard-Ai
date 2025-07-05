@@ -8,64 +8,381 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.css"> 
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #A8B8FF 0%, #88D3CE 100%); /* Blue-green gradient */
+            background-size: 400% 400%; /* Larger background for animation */
+            animation: gradientAnimation 15s ease infinite; /* Smooth, continuous gradient animation */
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism for containers */
+        .glass-sidebar, .glass-chat-area, .glass-input-bar {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Adjustments for specific elements */
+        .glass-sidebar {
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0 20px 20px 0; /* Rounded on the right side */
+            transition: all 0.3s ease-in-out; /* Smooth transition for sidebar toggle */
+        }
+
+        .glass-chat-area {
+            border-radius: 20px;
+            margin: 1rem; /* Add some margin around the main chat area */
+            display: flex; /* Ensure it remains flex column */
+            flex-direction: column;
+            overflow: hidden; /* Hide scrollbars of children if they go out of bounds */
+        }
+
+        .glass-chat-input-wrapper {
+            background: rgba(255, 255, 255, 0.2); /* Lighter transparent for the input wrapper */
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px; /* Fully rounded */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .glass-chat-input-wrapper:focus-within {
+            box-shadow: 0 0 0 3px rgba(106, 130, 251, 0.3), 0 4px 15px rgba(0, 0, 0, 0.15); /* Glow on focus */
+        }
+
+        /* Button styles */
+        .btn-primary-gradient {
+            background: linear-gradient(45deg, #6A82FB, #FC5C7D); /* Blue to Pink gradient */
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .btn-primary-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        .btn-secondary-transparent {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary-transparent:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+        .btn-red-transparent {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-red-transparent:hover {
+            background: rgba(255, 0, 0, 0.3);
+            transform: translateY(-1px);
+        }
+        .btn-red-transparent:disabled {
+            background: rgba(255, 0, 0, 0.1);
+            border-color: rgba(255, 0, 0, 0.15);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Text and Link Colors */
+        .text-white-on-glass {
+            color: white;
+        }
+        .text-light-gray-on-glass {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .link-text {
+            color: #E0F2F7; /* Light blue */
+            transition: color 0.3s ease;
+        }
+        .link-text:hover {
+            color: #B2EBF2; /* Lighter blue on hover */
+        }
+        .profile-username {
+            color: #FFF;
+            font-weight: 600;
+        }
+
+        /* Input field styling */
+        #userInput {
+            background-color: transparent; /* Keep input background transparent */
+            border: none; /* Remove border from input, rely on parent wrapper */
+            color: white; /* White text for input */
+            padding-left: 1.25rem; /* Match pl-5 in Tailwind */
+            padding-right: 3.5rem; /* Make space for send button */
+        }
+        #userInput::placeholder {
+            color: rgba(255, 255, 255, 0.7); /* Lighter placeholder */
+        }
+        #userInput:focus {
+            outline: none; /* Remove focus outline, use parent glow */
+            box-shadow: none;
+            border-color: transparent;
+        }
+
+        /* Chat history items */
+        .chat-history-item {
+            background: rgba(255, 255, 255, 0.08); /* Very subtle transparent background */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #E0F2F7; /* Light blue text */
+            transition: background-color 0.2s, transform 0.2s;
+            position: relative; /* For actions menu positioning */
+        }
+        .chat-history-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .chat-history-item.active {
+            background: rgba(255, 255, 255, 0.25); /* More prominent when active */
+            border-color: #88D3CE; /* Teal border for active */
+            box-shadow: 0 0 0 2px rgba(136, 211, 206, 0.3);
+        }
+
+        /* Profile image in sidebar */
+        .profile-img-sidebar {
+            border: 2px solid rgba(255, 255, 255, 0.6); /* White border for contrast */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+        }
+        .profile-img-sidebar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border-color: #A8B8FF; /* Highlight on hover */
+        }
+
+        /* Chat messages */
+        .message {
+            padding: 1rem 1.5rem; /* Adjust padding for message bubbles */
+            border-radius: 1.5rem; /* More rounded corners */
+            max-width: 85%; /* Keep messages from stretching too wide */
+        }
+
+        .user-message {
+            background: linear-gradient(90deg, #A8B8FF, #6A82FB); /* Blue gradient for user */
+            color: white;
+            align-self: flex-end; /* Align to right */
+            border-bottom-right-radius: 0.5rem; /* Smaller corner on one side */
+            animation: fadeInMessage 0.3s ease-out;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .ai-message {
+            background: linear-gradient(90deg, #88D3CE, #FC5C7D); /* Teal to pink gradient for AI */
+            color: white;
+            align-self: flex-start; /* Align to left */
+            border-bottom-left-radius: 0.5rem;
+            animation: fadeInMessage 0.3s ease-out;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        @keyframes fadeInMessage {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Code block styling within messages */
+        .message pre {
+            background-color: rgba(0, 0, 0, 0.2); /* Darker transparent background for code */
+            border-radius: 8px;
+            padding: 0.75rem;
+            overflow-x: auto;
+            color: #E0F2F7; /* Light text for code */
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        .message code {
+            font-family: 'Fira Code', 'JetBrains Mono', monospace;
+            background-color: rgba(0, 0, 0, 0.1); /* Lighter transparent for inline code */
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+        }
+
+        /* Responsiveness & Sidebar Toggle */
+        .sidebar-toggle-btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            z-index: 60; /* Above sidebar */
+            padding: 0.5rem;
+            border-radius: 50%;
+            display: none; /* Hidden by default on larger screens */
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .sidebar-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-toggle-btn {
+                display: block; /* Show toggle button on small screens */
+            }
+            .sidebar-collapsed .sidebar {
+                transform: translateX(-100%);
+                position: absolute; /* Take out of flow when collapsed */
+                left: 0;
+            }
+            .sidebar-expanded .sidebar {
+                transform: translateX(0);
+                position: fixed; /* Fix position when expanded */
+                height: 100%;
+                width: 75%; /* Occupy more width on mobile */
+                z-index: 50;
+            }
+            .chat-area-expanded {
+                width: 100%; /* Full width when sidebar is collapsed */
+                margin: 0;
+                border-radius: 0;
+            }
+            .chat-area-shifted {
+                 /* Adjust this based on your preference when sidebar is open */
+                 margin-left: 75%; /* Shift chat content to the right */
+                 width: 25%; /* Shrink chat area to accommodate sidebar */
+            }
+
+            body.sidebar-collapsed .sidebar {
+                transform: translateX(-100%);
+            }
+
+            body.sidebar-expanded .sidebar {
+                transform: translateX(0);
+                position: fixed;
+                width: 75%;
+                z-index: 50;
+            }
+
+            body.sidebar-expanded .main-content {
+                transform: translateX(75%); /* Shift main content */
+                width: 25%; /* Shrink main content */
+            }
+        }
+
+        /* Fade overlay for mobile when sidebar is open */
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+            display: none;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+        body.sidebar-expanded .sidebar-overlay {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Specific styles for message container */
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem; /* Spacing between messages */
+        }
+        .message-row {
+            display: flex;
+            width: 100%;
+            justify-content: flex-start; /* Default for AI */
+        }
+        .message-row.user {
+            justify-content: flex-end; /* Align user messages to the right */
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #6A82FB; /* Primary gradient color */
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Markdown specific rendering */
+        #chat-container h1, #chat-container h2, #chat-container h3 { color: white; margin-top: 1em; margin-bottom: 0.5em; }
+        #chat-container p { margin-bottom: 1em; line-height: 1.6; }
+        #chat-container ul, #chat-container ol { margin-left: 1.5em; margin-bottom: 1em; }
+        #chat-container li { margin-bottom: 0.5em; }
+        #chat-container a { color: #A8B8FF; text-decoration: underline; }
+        #chat-container blockquote {
+            border-left: 4px solid rgba(255, 255, 255, 0.4);
+            padding-left: 1em;
+            margin-bottom: 1em;
+            color: rgba(255, 255, 255, 0.8);
+            font-style: italic;
+        }
+    </style>
 </head>
-<body class="bg-white flex h-screen transition-colors duration-300">
+<body class="flex h-screen transition-all duration-300 sidebar-collapsed">
 
-    <!-- Generic Confirmation Modal -->
-    <div id="confirmation-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
-            <h3 id="modal-title" class="text-lg font-bold text-gray-900">Confirm Action</h3>
-            <p id="modal-text" class="mt-2 text-sm text-gray-600">Are you sure?</p>
-            <div class="mt-6 flex justify-end space-x-4">
-                <button id="cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
-                <button id="confirm-btn" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Confirm</button>
-            </div>
-        </div>
-    </div>
+    <button id="sidebar-toggle-btn" class="sidebar-toggle-btn block md:hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+    </button>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
-    <!-- Sidebar for Chat History -->
-    <div class="w-1/4 bg-yellow-50 border-r border-yellow-200 flex flex-col h-full">
-        <div class="p-4 border-b border-yellow-200">
-            <button id="new-chat-btn" class="w-full py-2 px-4 bg-yellow-400 text-stone-800 font-semibold rounded-lg shadow-sm hover:bg-yellow-500 transition">
+    <div class="sidebar w-1/4 bg-transparent flex flex-col h-full z-50 md:relative glass-sidebar">
+        <div class="p-4 border-b border-white border-opacity-30">
+            <button id="new-chat-btn" class="w-full py-2 px-4 font-semibold rounded-lg shadow-sm transition btn-primary-gradient">
                 + New Conversation
             </button>
         </div>
         <div id="chat-history-list" class="flex-1 overflow-y-auto p-2 space-y-1">
-            <!-- Chat history items will be loaded here by client.js -->
-        </div>
-        <div class="p-4 border-t border-yellow-200 flex items-center justify-between">
+            </div>
+        <div class="p-4 border-t border-white border-opacity-30 flex items-center justify-between">
             <div class="flex items-center">
                 <a href="/profile" title="Edit Profile">
                     <img 
-  src="<%= user.profileImage ? `data:${user.profileImage.contentType};base64,${user.profileImage.data}` : '/images/default-avatar.png' %>" 
-  alt="Profile" 
-  class="h-10 w-10 rounded-full mr-3 object-cover cursor-pointer hover:ring-2 hover:ring-yellow-400">
-
+                        src="<%= user.profileImage ? `data:${user.profileImage.contentType};base64,${user.profileImage.data}` : '/images/default-avatar.png' %>" 
+                        alt="Profile" 
+                        class="h-10 w-10 rounded-full mr-3 object-cover cursor-pointer profile-img-sidebar">
                 </a>
                 <div>
-                    <p class="font-semibold text-gray-800"><%= user.username %></p>
-                    <a href="/auth/logout" class="text-sm text-yellow-600 hover:text-yellow-500">Logout</a>
+                    <p class="profile-username"><%= user.username %></p>
+                    <a href="/auth/logout" class="text-sm link-text">Logout</a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Main Chat Area -->
-    <div class="w-3/4 flex flex-col h-full">
-        <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-             <h2 id="chat-title" class="text-lg font-semibold text-gray-700 truncate">Conversation</h2>
-             <button id="clear-chat-btn" class="text-sm font-medium text-red-600 hover:text-red-500 disabled:text-gray-400 disabled:cursor-not-allowed">Clear Chat</button>
+    <div class="main-content flex flex-col flex-1 h-full bg-transparent glass-chat-area">
+        <div class="p-4 border-b border-white border-opacity-30 flex justify-between items-center rounded-t-2xl">
+            <h2 id="chat-title" class="text-lg font-semibold text-white truncate">Conversation</h2>
+            <button id="clear-chat-btn" class="text-sm font-medium disabled:opacity-50 btn-red-transparent">Clear Chat</button>
         </div>
 
         <div id="chat-container" class="flex-1 p-6 space-y-6 overflow-y-auto">
-             <!-- Chat messages will be loaded here by client.js -->
-        </div>
+            </div>
 
-        <div class="p-4 border-t border-gray-200">
-            <div class="relative bg-gray-100 rounded-full border border-gray-300">
-                <input type="text" id="userInput" placeholder="Message Coatcard AI..." class="w-full bg-transparent text-gray-800 placeholder-gray-500 rounded-full py-3 pl-5 pr-14 focus:outline-none focus:ring-2 focus:ring-yellow-400">
-                <button id="sendButton" class="absolute right-2 top-1/2 -translate-y-1/2 bg-yellow-400 text-white p-2 rounded-full hover:bg-yellow-500 disabled:bg-yellow-200">
+        <div class="p-4 border-t border-white border-opacity-30 rounded-b-2xl">
+            <div class="relative glass-chat-input-wrapper">
+                <input type="text" id="userInput" placeholder="Message Coatcard AI..." class="w-full bg-transparent text-white placeholder-gray-500 rounded-full py-3 pl-5 pr-14 focus:outline-none">
+                <button id="sendButton" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full disabled:opacity-50 btn-primary-gradient">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3.478 2.405a.75.75 0 0 0-.926.94l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.405Z"/></svg>
                 </button>
             </div>
@@ -76,7 +393,6 @@
         // Pass user details to the client-side script
         const userDetails = {
             profileImage: "<%= user.profileImage && user.profileImage.data ? `data:${user.profileImage.contentType};base64,${user.profileImage.data}` : '/images/default-avatar.png' %>",
-
             preferences: {
                 language: "<%= user.preferences.language %>",
                 explanationStyle: "<%= user.preferences.explanationStyle %>"
@@ -85,6 +401,23 @@
             fieldOfWork: "<%= user.fieldOfWork %>",
             goal: "<%= user.goal %>"
         };
+
+        // --- Sidebar Toggle Logic ---
+        const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+        const sidebar = document.querySelector('.sidebar');
+        const body = document.body;
+        const mainContent = document.querySelector('.main-content');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        function toggleSidebar() {
+            body.classList.toggle('sidebar-expanded');
+            body.classList.toggle('sidebar-collapsed');
+        }
+
+        sidebarToggleBtn.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar); // Close sidebar when overlay is clicked
+
+       
     </script>
     <script src="/js/client.js"></script>
 </body>

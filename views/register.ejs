@@ -6,70 +6,199 @@
     <title>Register - Coatcard AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Gradient Background for the Body */
+            background: linear-gradient(135deg, #A8B8FF 0%, #88D3CE 100%); /* Blue-green gradient */
+            background-size: 400% 400%; /* Larger background for animation */
+            animation: gradientAnimation 15s ease infinite; /* Smooth, continuous gradient animation */
+        }
+
+        /* Keyframe animation for the background gradient */
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism Effect for the main content container */
+        .glass-container {
+            background: rgba(255, 255, 255, 0.15); /* Slightly transparent white background */
+            backdrop-filter: blur(10px); /* The key to the glass effect */
+            -webkit-backdrop-filter: blur(10px); /* For Safari support */
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle light border */
+            border-radius: 20px; /* Rounded corners for the card */
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); /* Soft shadow for depth */
+            animation: fadeInRise 0.8s ease-out forwards; /* Fade in and subtly rise on load */
+        }
+
+        /* Animation for the main content container */
+        @keyframes fadeInRise {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Input/Select field styling for consistency with the new theme */
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        select {
+            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+            border: 1px solid rgba(255, 255, 255, 0.4); /* Lighter border */
+            color: #333; /* Dark text for readability */
+            box-shadow: none; /* Remove default shadow from Tailwind forms */
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        select:focus {
+            border-color: #6A82FB; /* Highlight focus with a themed color */
+            outline: none; /* Remove default outline */
+            box-shadow: 0 0 0 3px rgba(106, 130, 251, 0.3); /* Subtle glow on focus */
+        }
+
+        /* Custom file input label */
         .file-input-label {
             display: block;
             padding: 0.75rem 1.25rem;
             border-radius: 0.5rem;
-            background-color: #f3f4f6;
-            color: #4b5563;
+            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+            color: #333; /* Dark text */
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, transform 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.4); /* Consistent border */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
         .file-input-label:hover {
-            background-color: #e5e7eb;
+            background-color: rgba(255, 255, 255, 0.9);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Custom button style */
+        .btn-primary-gradient {
+            background: linear-gradient(45deg, #6A82FB, #FC5C7D); /* Blue to Pink gradient */
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary-gradient:hover {
+            transform: translateY(-2px); /* Slight lift on hover */
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Link colors for better contrast */
+        .link-text {
+            color: #E0F2F7; /* Light blue */
+            transition: color 0.3s ease;
+        }
+        .link-text:hover {
+            color: #B2EBF2; /* Lighter blue on hover */
+        }
+
+        /* Header text color */
+        .header-text-color {
+            color: #FFF; /* White color for main titles */
+        }
+
+        /* Section titles within the form */
+        .section-title {
+            color: #FFF; /* White color */
+        }
+
+        /* Field labels */
+        .label-text-color {
+            color: #E0F2F7; /* Light blue for labels */
+        }
+
+        /* Smaller text for max size info */
+        .info-text-color {
+            color: #B2EBF2; /* Lighter blue */
+        }
+
+        /* Radio button labels for goals */
+        .radio-label {
+            background: rgba(255, 255, 255, 0.1); /* Very light transparent background */
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white; /* White text */
+            transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+        }
+
+        .radio-label:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .radio-label.has-[:checked] {
+            background: rgba(255, 255, 255, 0.3); /* More opaque when checked */
+            border-color: rgba(136, 211, 206, 0.7); /* Teal/green border when checked */
+        }
+
+        .form-radio { /* Custom color for the radio button itself */
+            color: #88D3CE; /* Match the lighter gradient color */
+            --tw-ring-color: #88D3CE; /* Tailwind ring color for focus */
+        }
+
+        /* Image preview border */
+        #image-preview {
+            border: 2px solid rgba(255, 255, 255, 0.6); /* Lighter border for consistency */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
     </style>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-
 </head>
-<body class="bg-yellow-50 flex items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8">
-    <div class="w-full max-w-lg p-8 space-y-8 bg-white rounded-2xl shadow-lg">
-        <h2 class="text-3xl font-bold text-center text-yellow-900">Create Your Account</h2>
-
+<body class="flex items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="w-full max-w-lg p-8 space-y-8 glass-container"> <h2 class="text-3xl font-bold text-center header-text-color">Create Your Account</h2>
 
         <form class="mt-8 space-y-6" action="/auth/register" method="POST" enctype="multipart/form-data">
-
             <div class="rounded-md shadow-sm -space-y-px">
                 <div>
                     <label for="username" class="sr-only">Username</label>
                     <input id="username" name="username" type="text" required
-                        class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm"
+                        class="appearance-none rounded-t-md relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-opacity-50 sm:text-sm"
                         placeholder="Username">
                 </div>
                 <div>
                     <label for="email-address" class="sr-only">Email address</label>
                     <input id="email-address" name="email" type="email" required
-                        class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm"
+                        class="appearance-none relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-opacity-50 sm:text-sm"
                         placeholder="Email address">
                 </div>
                 <div>
                     <label for="password" class="sr-only">Password</label>
                     <input id="password" name="password" type="password" required
-                        class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm"
+                        class="appearance-none rounded-b-md relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-opacity-50 sm:text-sm"
                         placeholder="Password">
                 </div>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
+                <label class="block text-sm font-medium label-text-color mb-2">Profile Picture</label>
                 <div class="flex justify-center mb-4">
-                    <img id="image-preview" class="w-24 h-24 rounded-full object-cover border border-gray-300" src="/images/default-avatar.png" alt="Profile Preview">
+                    <img id="image-preview" class="w-24 h-24 rounded-full object-cover" src="/images/default-avatar.png" alt="Profile Preview">
                 </div>
                 <label for="profileImage" class="file-input-label text-center">
                     <span id="file-name">Choose a file</span>
                 </label>
                 <input id="profileImage" name="profileImage" type="file" class="sr-only" accept="image/*">
-                <p class="mt-1 text-xs text-gray-500 text-center">Max 5MB (JPEG, PNG, GIF)</p>
+                <p class="mt-1 text-xs text-center info-text-color">Max 5MB (JPEG, PNG, GIF)</p>
             </div>
 
             <div class="space-y-4">
-                <h3 class="text-sm font-medium text-gray-700">Tell us about yourself</h3>
+                <h3 class="text-sm font-medium section-title">Tell us about yourself</h3>
                 <div>
-                    <label for="fieldOfWork" class="block text-sm font-medium text-gray-700">My field is...</label>
+                    <label for="fieldOfWork" class="block text-sm font-medium label-text-color">My field is...</label>
                     <select id="fieldOfWork" name="fieldOfWork"
-                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm rounded-md">
+                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border focus:outline-none focus:ring-opacity-50 sm:text-sm rounded-md">
                         <option>Software Engineering</option>
                         <option>Data Science</option>
                         <option>Web Development</option>
@@ -81,18 +210,18 @@
             </div>
 
             <div class="space-y-2">
-                <label class="block text-sm font-medium text-gray-700">I'm here to...</label>
+                <label class="block text-sm font-medium label-text-color">I'm here to...</label>
                 <div class="flex flex-wrap gap-2">
-                    <label class="flex items-center space-x-2 border border-gray-300 rounded-full px-3 py-1 cursor-pointer hover:bg-yellow-100 has-[:checked]:bg-yellow-200 has-[:checked]:border-yellow-400">
-                        <input type="radio" name="goal" value="Learn Concepts" class="form-radio text-yellow-500 focus:ring-yellow-500" required>
+                    <label class="flex items-center space-x-2 rounded-full px-3 py-1 cursor-pointer radio-label">
+                        <input type="radio" name="goal" value="Learn Concepts" class="form-radio" required>
                         <span>Learn Concepts</span>
                     </label>
-                    <label class="flex items-center space-x-2 border border-gray-300 rounded-full px-3 py-1 cursor-pointer hover:bg-yellow-100 has-[:checked]:bg-yellow-200 has-[:checked]:border-yellow-400">
-                        <input type="radio" name="goal" value="Solve Problems" class="form-radio text-yellow-500 focus:ring-yellow-500" required>
+                    <label class="flex items-center space-x-2 rounded-full px-3 py-1 cursor-pointer radio-label">
+                        <input type="radio" name="goal" value="Solve Problems" class="form-radio" required>
                         <span>Solve Problems</span>
                     </label>
-                    <label class="flex items-center space-x-2 border border-gray-300 rounded-full px-3 py-1 cursor-pointer hover:bg-yellow-100 has-[:checked]:bg-yellow-200 has-[:checked]:border-yellow-400">
-                        <input type="radio" name="goal" value="Prepare for Interviews" class="form-radio text-yellow-500 focus:ring-yellow-500" required>
+                    <label class="flex items-center space-x-2 rounded-full px-3 py-1 cursor-pointer radio-label">
+                        <input type="radio" name="goal" value="Prepare for Interviews" class="form-radio" required>
                         <span>Prepare for Interviews</span>
                     </label>
                 </div>
@@ -100,13 +229,13 @@
 
             <div>
                 <button type="submit"
-                    class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-stone-800 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                    class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md btn-primary-gradient">
                     Register
                 </button>
             </div>
         </form>
-        <p class="text-center text-sm">
-            Already have an account? <a href="/login" class="font-medium text-yellow-600 hover:text-yellow-500">Log in</a>
+        <p class="text-center text-sm text-gray-200">
+            Already have an account? <a href="/login" class="font-medium link-text">Log in</a>
         </p>
     </div>
 
@@ -115,7 +244,7 @@
             var fileName = this.files[0] ? this.files[0].name : "Choose a file";
             document.getElementById('file-name').textContent = fileName;
 
-            // UPDATED: Image preview logic
+            // Image preview logic
             const preview = document.getElementById('image-preview');
             const file = event.target.files[0];
 

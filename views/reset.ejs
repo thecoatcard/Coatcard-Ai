@@ -5,16 +5,91 @@
     <title>Reset Password - Coatcard AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <style>body { font-family: 'Inter', sans-serif; }</style>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Gradient Background for the Body */
+            background: linear-gradient(135deg, #A8B8FF 0%, #88D3CE 100%); /* Blue-green gradient */
+            background-size: 400% 400%; /* Larger background for animation */
+            animation: gradientAnimation 15s ease infinite; /* Smooth, continuous gradient animation */
+        }
 
+        /* Keyframe animation for the background gradient */
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism Effect for the main content container */
+        .glass-container {
+            background: rgba(255, 255, 255, 0.15); /* Slightly transparent white background */
+            backdrop-filter: blur(10px); /* The key to the glass effect */
+            -webkit-backdrop-filter: blur(10px); /* For Safari support */
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle light border */
+            border-radius: 20px; /* Rounded corners for the card */
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); /* Soft shadow for depth */
+            animation: fadeInScale 0.8s ease-out forwards; /* Fade in and slightly scale up on load */
+        }
+
+        /* Animation for the main content container */
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Input field styling for consistency with the new theme */
+        input[type="password"] {
+            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+            border: 1px solid rgba(255, 255, 255, 0.4); /* Lighter border */
+            color: #333; /* Dark text for readability */
+            box-shadow: none; /* Remove default shadow from Tailwind forms */
+        }
+
+        input[type="password"]:focus {
+            border-color: #6A82FB; /* Highlight focus with a themed color */
+            outline: none; /* Remove default outline */
+            box-shadow: 0 0 0 3px rgba(106, 130, 251, 0.3); /* Subtle glow on focus */
+        }
+
+        /* Custom button style */
+        .btn-primary-gradient {
+            background: linear-gradient(45deg, #6A82FB, #FC5C7D); /* Blue to Pink gradient */
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary-gradient:hover {
+            transform: translateY(-2px); /* Slight lift on hover */
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Header text color */
+        .header-text-color {
+            color: #FFF; /* White color for main titles */
+        }
+
+        /* Message area styling adjustments */
+        .message-error {
+            background-color: rgba(255, 199, 199, 0.2); /* Lighter red transparent */
+            border-color: rgba(244, 67, 54, 0.4);
+            color: #F44336;
+        }
+    </style>
 </head>
-<body class="bg-yellow-50 flex items-center justify-center h-screen">
-    <div class="w-full max-w-md p-8 space-y-8 bg-white rounded-2xl shadow-lg">
-        <h2 class="text-3xl font-bold text-center text-yellow-900">Enter New Password</h2>
+<body class="flex items-center justify-center h-screen">
+    <div class="w-full max-w-md p-8 space-y-8 glass-container"> <h2 class="text-3xl font-bold text-center header-text-color">Enter New Password</h2>
 
         <% if (locals.msg) { %>
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-center" role="alert">
+            <div class="px-4 py-3 rounded relative text-center message-error" role="alert">
                 <span class="block sm:inline"><%= msg %></span>
             </div>
         <% } %>
@@ -23,15 +98,20 @@
             <div class="rounded-md shadow-sm -space-y-px">
                 <div>
                     <label for="password" class="sr-only">New Password</label>
-                    <input id="password" name="password" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 focus:z-10 sm:text-sm" placeholder="New Password">
+                    <input id="password" name="password" type="password" required
+                        class="appearance-none rounded-t-md relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-opacity-50 sm:text-sm"
+                        placeholder="New Password">
                 </div>
                 <div>
                     <label for="confirm-password" class="sr-only">Confirm Password</label>
-                    <input id="confirm-password" name="confirmPassword" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 focus:z-10 sm:text-sm" placeholder="Confirm New Password">
+                    <input id="confirm-password" name="confirmPassword" type="password" required
+                        class="appearance-none rounded-b-md relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-opacity-50 sm:text-sm"
+                        placeholder="Confirm New Password">
                 </div>
             </div>
             <div>
-                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-stone-800 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                <button type="submit"
+                    class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md btn-primary-gradient">
                     Update Password
                 </button>
             </div>
