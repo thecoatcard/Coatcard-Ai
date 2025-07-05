@@ -16,7 +16,10 @@ router.get('/login', (req, res) => res.render('login', { msg: null }));
 router.get('/register', (req, res) => res.render('register', { msg: null }));
 
 // @route   GET /chat
-router.get('/chat', ensureAuthenticated, (req, res) => res.render('chat'));
+router.get('/chat', ensureAuthenticated, (req, res) => {
+    res.render('chat', { user: req.session.user });
+});
+
 
 // @route   GET /verify
 router.get('/verify', (req, res) => res.render('verify', { email: req.query.email, msg: null }));

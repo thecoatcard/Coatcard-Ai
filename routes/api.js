@@ -60,21 +60,25 @@ router.post('/chat', ensureAuthenticated, async (req, res) => {
         if (botResponse.candidates && botResponse.candidates.length > 0) {
             // The history saved to the DB ONLY includes the user/model messages (no system prompt)
             const newHistoryToSave = [...history, { role: 'model', parts: botResponse.candidates[0].content.parts }];
-            
+
             let chatTitle = 'New Conversation';
             if (firstMessage) {
                 // Ask Gemini to create a short title for the conversation
                 const titlePrompt = `Based on the following user prompt, create a very short title (4-5 words max) for this conversation. User Prompt: "${firstMessage}"`;
                 const titleResponse = await axios.post(apiUrl, { contents: [{ role: 'user', parts: [{ text: titlePrompt }] }] });
                 if (titleResponse.data.candidates && titleResponse.data.candidates.length > 0) {
-                    chatTitle = titleResponse.data.candidates[0].content.parts[0].text.replace(/"/g, '').trim();
+                    const titleParts = titleResponse.data?.candidates?.[0]?.content?.parts;
+                    if (titleParts && titleParts[0]?.text) {
+                        chatTitle = titleParts[0].text.replace(/"/g, '').trim();
+                    }
+
                 }
             }
 
             // Find the chat by its ID and update it with the new history and potentially a new title
             const updatedChat = await Chat.findByIdAndUpdate(
                 chatId,
-                { 
+                {
                     history: newHistoryToSave,
                     ...(firstMessage && { title: chatTitle }) // Conditionally update title only if it's the first message
                 },
@@ -84,7 +88,7 @@ router.post('/chat', ensureAuthenticated, async (req, res) => {
             // Send the AI's response and the updated chat document back to the client
             res.json({ botResponse, updatedChat });
         } else {
-             res.status(500).json({ error: 'No valid response from AI.' });
+            res.status(500).json({ error: 'No valid response from AI.' });
         }
     } catch (error) {
         console.error('Error in /api/chat:', error.response ? error.response.data : error.message);
