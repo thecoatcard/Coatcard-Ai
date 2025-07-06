@@ -2,170 +2,113 @@
 <html lang="en" class="transition duration-300">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Coatcard AI</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class'
-    };
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <link rel="icon" href="/favicon.svg" />
-  <link rel="stylesheet" href="/css/style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coatcard AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="icon" href="/favicon.svg" />
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body
-  class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col md:flex-row font-[Inter] transition-colors duration-300">
+    class="bg-primary text-text-primary min-h-screen flex font-[Inter] transition-colors duration-300 overflow-hidden">
 
-  <!-- Topbar (Mobile) -->
-  <header
-    class="md:hidden flex justify-between items-center p-4 bg-yellow-400 dark:bg-yellow-600 shadow-md z-40 sticky top-0">
-    <button id="menu-toggle" class="text-gray-800 dark:text-gray-100">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path d="M4 6h16M4 12h16M4 18h16" />
-      </svg>
-    </button>
-    <h1 class="text-lg font-semibold">Coatcard AI</h1>
-    <button id="dark-toggle" class="text-gray-800 dark:text-white">
-      🌙
-    </button>
-  </header>
+    <aside id="sidebar"
+        class="bg-secondary border-r border-border h-full w-64 flex-shrink-0 transform transition-all duration-300 ease-in-out flex flex-col absolute md:relative z-50 -translate-x-full md:translate-x-0">
+        <div class="p-4 border-b border-border flex-shrink-0">
+            <button id="new-chat-btn"
+                class="w-full py-2 px-4 bg-accent text-accent-text font-semibold rounded-lg shadow-sm hover:bg-accent-hover transition">
+                + New Conversation
+            </button>
+        </div>
+        <div id="chat-history-list" class="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
+            </div>
+        <div class="border-t border-border p-4 flex-shrink-0">
+            <div class="flex items-center justify-between mb-4">
+                <a href="/profile" title="Edit Profile" class="flex items-center space-x-3">
+                    <img src="<%= user.profileImage %>"
+                        class="h-10 w-10 rounded-full object-cover hover:ring-2 ring-accent" alt="User Profile Picture" />
+                    <div>
+                        <p class="font-semibold truncate">
+                            <%= user.username %>
+                        </p>
+                        <a href="/auth/logout" class="text-sm text-link hover:text-link-hover">Logout</a>
+                    </div>
+                </a>
+            </div>
+            <div class="relative">
+                <label for="theme-switcher" class="text-xs font-medium text-text-secondary">Theme</label>
+                <select id="theme-switcher"
+                    class="w-full mt-1 p-2 bg-tertiary border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent">
+                    <option value="default">Default Yellow</option>
+                    <option value="ocean">Ocean Blue</option>
+                    <option value="forest">Forest Green</option>
+                </select>
+            </div>
+        </div>
+    </aside>
+    
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
-  <!-- Sidebar -->
-  <aside id="sidebar"
-    class="fixed z-50 md:static md:z-auto top-0 left-0 h-screen w-64 bg-yellow-50 dark:bg-gray-800 border-r border-yellow-200 dark:border-gray-700 p-4 transform transition-transform duration-300 ease-in-out md:translate-x-0 -translate-x-full md:flex flex-col overflow-hidden">
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <header class="flex justify-between items-center p-4 border-b border-border flex-shrink-0">
+            <div class="flex items-center gap-4">
+                <button id="menu-toggle" class="p-2 rounded-md hover:bg-secondary" aria-label="Toggle Sidebar">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <h2 id="chat-title" class="text-lg font-semibold truncate">Conversation</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="dark-toggle" class="p-2 rounded-md hover:bg-secondary" aria-label="Toggle Dark Mode">
+                    <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                    <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                </button>
+                <button id="clear-chat-btn" class="text-sm font-medium text-red-500 hover:text-red-700 disabled:text-gray-400">Clear Chat</button>
+            </div>
+        </header>
 
-    <button id="new-chat-btn"
-      class="w-full py-2 px-4 bg-yellow-400 dark:bg-yellow-600 text-stone-800 dark:text-white font-semibold rounded-lg shadow-sm hover:bg-yellow-500 transition mb-4">
-      + New Conversation
-    </button>
+        <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth custom-scrollbar">
+            </div>
 
-    <div id="chat-history-list" class="flex-1 overflow-hidden space-y-1 mb-4">
-      <!-- Chat history here (no scroll allowed) -->
+        <div class="p-4 border-t border-border">
+            <div class="relative bg-secondary rounded-2xl border border-border flex items-end">
+                <textarea id="userInput" placeholder="Message Coatcard AI..." class="w-full bg-transparent p-3 pl-5 pr-14 resize-none focus:outline-none focus:ring-2 focus:ring-accent rounded-2xl" rows="1"></textarea>
+                <button id="sendButton" class="absolute right-2 bottom-2 bg-accent text-accent-text p-2 rounded-full hover:bg-accent-hover transition-colors">
+                    <svg id="send-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M3.478 2.405a.75.75 0 0 0-.926.94l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.405Z"/></svg>
+                    <div id="send-spinner" class="hidden animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
+                </button>
+            </div>
+        </div>
     </div>
 
-    <div class="border-t border-yellow-200 dark:border-gray-700 pt-4 flex items-center space-x-3">
-      <a href="/profile" title="Edit Profile">
-        <img
-          src="<%= user.profileImage ? `data:${user.profileImage.contentType};base64,${user.profileImage.data}` : '/images/default-avatar.png' %>"
-          class="h-10 w-10 rounded-full object-cover hover:ring-2 hover:ring-yellow-400" />
-      </a>
-      <div>
-        <p class="font-semibold">
-          <%= user.username %>
-        </p>
-        <a href="/auth/logout" class="text-sm text-yellow-600 dark:text-yellow-400 hover:text-yellow-500">Logout</a>
-      </div>
-    </div>
-  </aside>
-
-  <!-- Sidebar Overlay -->
-  <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-40 z-40 hidden md:hidden"></div>
-
-  <!-- Main Chat -->
-  <main class="flex-1 flex flex-col h-screen overflow-hidden">
-
-    <!-- Desktop Topbar -->
-    <div class="hidden md:flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
-      <h2 id="chat-title" class="text-lg font-semibold">Conversation</h2>
-      <div class="flex gap-3">
-        <button id="dark-toggle-desktop" class="text-yellow-600 dark:text-yellow-400 hover:opacity-80">🌙</button>
-        <button id="clear-chat-btn"
-          class="text-sm font-medium text-red-600 hover:text-red-500 dark:hover:text-red-400 disabled:text-gray-400">Clear</button>
-      </div>
+    <div id="confirmation-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+        <div class="bg-primary p-6 rounded-lg shadow-xl max-w-sm w-full mx-4">
+            <h3 id="modal-title" class="text-lg font-bold">Confirm Action</h3>
+            <p id="modal-text" class="mt-2 text-sm text-text-secondary">Are you sure?</p>
+            <div class="mt-6 flex justify-end space-x-4">
+                <button id="cancel-btn" class="px-4 py-2 bg-tertiary text-text-primary rounded-md">Cancel</button>
+                <button id="confirm-btn" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Confirm</button>
+            </div>
+        </div>
     </div>
 
-    <!-- Chat Container -->
-    <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
-      <!-- Messages loaded here -->
-    </div>
-
-    <!-- Chat Input -->
-    <div class="sticky bottom-0 bg-white dark:bg-gray-900 p-4 border-t border-gray-200 dark:border-gray-700">
-      <div class="relative bg-gray-100 dark:bg-gray-800 rounded-2xl border border-gray-300 dark:border-gray-700">
-        <textarea id="userInput" rows="2" placeholder="Message Coatcard AI..."
-          class="w-full resize-none bg-transparent text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 rounded-2xl py-3 pl-5 pr-14 focus:outline-none focus:ring-2 focus:ring-yellow-400 dark:focus:ring-yellow-600"></textarea>
-
-        <button id="sendButton"
-          class="absolute right-2 top-3 bg-yellow-400 dark:bg-yellow-600 text-white p-2 rounded-full hover:bg-yellow-500 disabled:bg-yellow-200">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-            <path
-              d="M3.478 2.405a.75.75 0 0 0-.926.94l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.405Z" />
-          </svg>
-        </button>
-      </div>
-    </div>
-
-  </main>
-
-  <!-- Confirmation Modal -->
-  <div id="confirmation-modal"
-    class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full mx-4">
-      <h3 id="modal-title" class="text-lg font-bold">Confirm Action</h3>
-      <p id="modal-text" class="mt-2 text-sm">Are you sure?</p>
-      <div class="mt-6 flex justify-end space-x-4">
-        <button id="cancel-btn" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-md">Cancel</button>
-        <button id="confirm-btn" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Confirm</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // Auto-scroll to bottom on message load
-    const chatContainer = document.getElementById("chat-container");
-    const scrollToBottom = () => {
-      requestAnimationFrame(() => {
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-      });
-    };
-
-    // Dark mode toggle
-    const html = document.documentElement;
-    const darkToggleMobile = document.getElementById("dark-toggle");
-    const darkToggleDesktop = document.getElementById("dark-toggle-desktop");
-
-    const toggleDarkMode = () => html.classList.toggle("dark");
-
-    darkToggleMobile?.addEventListener("click", toggleDarkMode);
-    darkToggleDesktop?.addEventListener("click", toggleDarkMode);
-
-    // Sidebar toggle (mobile)
-    const toggleBtn = document.getElementById("menu-toggle");
-    const sidebar = document.getElementById("sidebar");
-    const overlay = document.getElementById("sidebar-overlay");
-
-    toggleBtn?.addEventListener("click", () => {
-      sidebar.classList.toggle("-translate-x-full");
-      overlay.classList.toggle("hidden");
-    });
-
-    overlay?.addEventListener("click", () => {
-      sidebar.classList.add("-translate-x-full");
-      overlay.classList.add("hidden");
-    });
-
-    // Simulate auto-scroll on new message added
-    const observer = new MutationObserver(scrollToBottom);
-    observer.observe(chatContainer, { childList: true });
-
-    // Optional: expose user
-    const userDetails = {
-      profileImage: "<%= user.profileImage && user.profileImage.data ? `data:${user.profileImage.contentType};base64,${user.profileImage.data}` : '/images/default-avatar.png' %>",
-      preferences: {
-        language: "<%= user.preferences.language %>",
-        explanationStyle: "<%= user.preferences.explanationStyle %>"
-      },
-      role: "<%= user.role %>",
-      fieldOfWork: "<%= user.fieldOfWork %>",
-      goal: "<%= user.goal %>"
-    };
-  </script>
-
-  <!-- Load Chat Client -->
-  <script src="/js/client.js"></script>
+    <script>
+        const userDetails = {
+            profileImage: "<%= user.profileImage %>",
+            preferences: { language: "<%= user.preferences.language %>", explanationStyle: "<%= user.preferences.explanationStyle %>" },
+            role: "<%= user.role %>",
+            fieldOfWork: "<%= user.fieldOfWork %>",
+            goal: "<%= user.goal %>"
+        };
+    </script>
+    <script src="/js/client.js"></script>
 </body>
-
 </html>
