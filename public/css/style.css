@@ -79,12 +79,6 @@ body {
     font-style: italic;
 }
 
-/* Dark Mode Prose */
-.dark .prose { color: #d1d5db; /* gray-300 */ }
-.dark .prose h3 { color: #fcd34d; /* yellow-300 */ border-bottom-color: #4b5563; /* gray-600 */ }
-.dark .prose code:not(pre code) { background-color: #451a03; /* amber-950 */ color: #fde68a; /* yellow-200 */ }
-.dark .prose pre { background-color: #111827; /* gray-900 */ border-color: #374151; /* gray-700 */ }
-.dark .prose blockquote { border-left-color: #eab308; /* amber-500 */ background-color: #1f2937; /* gray-800 */ color: #d1d5db; }
 
 
 /* --- Button Styles --- */
@@ -144,4 +138,14 @@ body {
 }
 .dark .optimize-btn:disabled {
     background-color: #4b5563; /* gray-600 */
+}
+dark .prose { color: #d1d5db; /* gray-300 */ }
+.dark .prose h3 { color: #fcd34d; /* yellow-300 */ border-bottom-color: #4b5563; /* gray-600 */ }
+.dark .prose code:not(pre code) { background-color: #451a03; /* amber-950 */ color: #fde68a; /* yellow-200 */ }
+.dark .prose pre { background-color: #111827; /* gray-900 */ border-color: #374151; /* gray-700 */ }
+.dark .prose blockquote { 
+    border-left-color: #eab308; /* amber-500 */ 
+    /* Changed background from gray-800 to gray-700 for contrast */
+    background-color: #374151; /* gray-700 */ 
+    color: #d1d5db; 
 }
