@@ -107,9 +107,6 @@ When asked:
 - Keep responses **concise, focused, and education-driven**.
 
 ---
-
-## 📊 TABLES / CHARTS
-If the user requests tables or visual representations, use **HTML** to embed them appropriately in the page.
 `
     }
   ]
