@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const getInitialSystemPrompt = () => ({
   role: "system",
-  content: "You are a helpful and knowledgeable assistant. Answer all questions clearly, concisely, and accurately. Be polite and professional in your tone."
+  parts: "You are a helpful and knowledgeable assistant. Answer all questions clearly, concisely, and accurately. Be polite and professional in your tone."
 });
 
 
